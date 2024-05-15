@@ -103,17 +103,54 @@ export const Landing = () => {
         <Graphviz
           dot={`
           digraph {
-            node [style="filled" height=0.25];
-            graph [center=1 rankdir=LR];
-            nodesep=1
-            {a, b, c, d, e, g, h} -> f [label="1"];
-            {a, b, c, d, e, g, h} -> k [label="1"];
-            {a, b, c, d, e, g, h} -> v [label="1"];
-            {a, b, c, d, e, g, h} -> n [label="1"];
-            v -> {q, w, r, t, z, x, y, u, i, o} [label="1"];
-            n -> {q, w, r, t, z, x, y, u, i, o} [label="1"];
-            f -> {q, w, r, t, z, x, y, u, i, o} [label="1"];
-            k -> {q, w, r, t, z, x, y, u, i, o} [label="1"];
+            size="20,10"; // Ajusta el tamaño del grafo (ancho, alto)
+            splines=polylines; // Líneas rectas
+            rankdir=LR; // Orientación de izquierda a derecha
+            node [shape=circle, width=20, fontsize=100]; // Nodos con forma de registro
+            nodesep=2; // Espacio entre nodos
+            ranksep=9; // Espacio entre filas
+            ratio=auto; // Relación de aspecto
+            
+
+            //ofertas
+            a [label="a"];
+            b [label="b"];
+            c [label="c"];
+            d [label="d"];
+            e [label="e"];
+            g [label="g"];
+            h [label="h"];
+
+            //transbordos
+            f [label="f"];
+            k [label="k"];
+            v [label="v"];
+            n [label="n"];
+
+            //demandas
+            q [label="q", xlabel="30", xlp=rjust];
+            w [label="w"];
+            r [label="r"];
+            t [label="t"];
+            z [label="z"];
+            x [label="x"];
+            y [label="y"];
+            u [label="u"];
+            i [label="i"];
+            o [label="o"];
+
+            // Conexiones
+            // oferta -> transbordo
+            { a, b, c, d, e, g, h } -> f [xlabel="1"][penwidth=2];
+            { a, b, c, d, e, g, h } -> k [taillabel="1"][penwidth=2];
+            { a, b, c, d, e, g, h } -> v [taillabel="1"][penwidth=2];
+            { a, b, c, d, e, g, h } -> n [taillabel="1"][penwidth=2];
+
+            // transbordo -> demanda
+            v -> {q, w, r, t, z, x, y, u, i, o} [headlabel="1"][penwidth=2];
+            n -> {q, w, r, t, z, x, y, u, i, o} [headlabel="1"][penwidth=2];
+            f -> {q, w, r, t, z, x, y, u, i, o} [headlabel="1"][penwidth=2];
+            k -> {q, w, r, t, z, x, y, u, i, o} [headlabel="1"][penwidth=2];
             rank=same { a, b, c, d, e, g, h }
             rank=same { f, k, v, n }
             rank=same { q, w, r, t, z, x, y, u, i, o }
