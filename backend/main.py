@@ -12,12 +12,19 @@ class Main:
         @self.app.route('/transportation_problem', methods=['POST'])
         def transportation_problem():
             try:
-                data:dict = request.get_json()
+                data = request.get_json()
                 supply:list[dict] = data.get("supply")
                 demand:list[dict] = data.get("demand")
                 graph = Graph(supply,demand)
-                return jsonify({'message': 'Automata creado correctamente', 'automata': ""})
+                respuesta =TransportationProblem.solve(graph)
+                json = graph.to_json()
+                return json
             except Exception as e:
+                traceback = e.__traceback__
+                while traceback:
+                    print("Archivo:", traceback.tb_frame.f_code.co_filename)
+                    print("Línea:", traceback.tb_lineno)
+                    traceback = traceback.tb_next
                 return jsonify({'error': str(e)}), 400
     
         @self.app.route('/transshipment_problem', methods=['POST'])
@@ -28,8 +35,14 @@ class Main:
                 demand:list[dict] = data.get("demand")
                 transshipment:list[dict] = data.get("transshipment")
                 graph = Graph(supply,demand,transshipment)
-                return jsonify({'message': 'Automata creado correctamente', 'automata': ""})
+                json = graph.to_json()
+                return json
             except Exception as e:
+                traceback = e.__traceback__
+                while traceback:
+                    print("Archivo:", traceback.tb_frame.f_code.co_filename)
+                    print("Línea:", traceback.tb_lineno)
+                    traceback = traceback.tb_next
                 return jsonify({'error': str(e)}), 400
             
     def run(self):
