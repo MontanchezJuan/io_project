@@ -6,6 +6,7 @@ import { PAGES, Page } from "../pages";
 
 export const Header = () => {
   const [header, setHeader] = useState<string>(PAGES[0].name);
+
   const navigate = useNavigate();
 
   const rediretTo = (page: Page) => {
@@ -25,7 +26,7 @@ export const Header = () => {
         <TabList mb="1em">
           {PAGES &&
             PAGES.map((page) => (
-              <Tab onClick={() => rediretTo(page)}>
+              <Tab key={page.path} onClick={() => rediretTo(page)}>
                 {header === page.name ? (
                   <p className="text-tertiary">{page.name}</p>
                 ) : (
