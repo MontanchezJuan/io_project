@@ -20,7 +20,8 @@ export const StepTwo = () => {
     return (
       <div className="flex justify-between items-center">
         <p className="text-[24px] font-bold">
-          {type !== "Transshipment" ? `${word} total: 0` : `${word}`}
+          {type !== "Transshipment" ? `${word} total: ${word === "Demanda" ? useStepbyStep().getTotalDemandQuantity() : 0}` : `${word}`}
+
         </p>
 
         <Button

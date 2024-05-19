@@ -29,6 +29,7 @@ interface StepByStepContextType {
   setStep: (newStep: number) => void;
   setStep1: (newStep1: Step1) => void;
   step1: Step1;
+  getTotalDemandQuantity: () => number;
 }
 
 const StepbyStepContext = createContext<StepByStepContextType | undefined>(
@@ -685,6 +686,17 @@ export const StepbyStepProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
+  const getTotalDemandQuantity = () => {
+    const demandNodes =
+      stepGlobal.dataTransport.demand.length > 0
+        ? stepGlobal.dataTransport.demand
+        : stepGlobal.dataTransfer.demand;
+    return demandNodes.reduce(
+      (total, node) => total + (node.demand_quantity || 0),
+      0
+    );
+  };
+
   return (
     <StepbyStepContext.Provider
       value={{
@@ -698,6 +710,7 @@ export const StepbyStepProvider: React.FC<{ children: ReactNode }> = ({
         setQuantity,
         setStep,
         setStep1,
+        getTotalDemandQuantity,
       }}
     >
       {children}
