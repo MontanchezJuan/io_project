@@ -23,6 +23,7 @@ interface StepByStepContextType {
     nodeName: string,
     transitionNodeName: string
   ) => void;
+  getMissingValues: (type: DST, method: ToT) => string[];
   resetNodes: (type: ToT) => void;
   setNodeName: (nodeName: string, newNodeName: string, type: ToT) => void;
   setQuantity: (nodeName: string, quantity: number, type: ToT) => void;
@@ -664,6 +665,70 @@ export const StepbyStepProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const getMissingValues = (type: DST, method: ToT) => {
+    let relevantNodes: (Node | SupplyNode | DemandNode)[] = [];
+    let allNodes: (Node | SupplyNode | DemandNode)[] = [];
+
+    if (method === "Transbordo") {
+      switch (type) {
+        case "Supply":
+          relevantNodes = stepGlobal.dataTransfer.supply;
+          allNodes = [
+            ...stepGlobal.dataTransfer.demand,
+            ...stepGlobal.dataTransfer.supply,
+          ];
+          break;
+        case "Demand":
+          relevantNodes = stepGlobal.dataTransfer.demand;
+          allNodes = [
+            ...stepGlobal.dataTransfer.demand,
+            ...stepGlobal.dataTransfer.supply,
+            ...stepGlobal.dataTransfer.transshipment,
+          ];
+          break;
+        case "Transshipment":
+          relevantNodes = stepGlobal.dataTransfer.transshipment;
+          allNodes = [
+            ...stepGlobal.dataTransfer.supply,
+            ...stepGlobal.dataTransfer.transshipment,
+          ];
+          break;
+      }
+    } else {
+      switch (type) {
+        case "Supply":
+          relevantNodes = stepGlobal.dataTransport.supply;
+          allNodes = [
+            ...stepGlobal.dataTransport.demand,
+            ...stepGlobal.dataTransport.supply,
+          ];
+          break;
+        case "Demand":
+          relevantNodes = stepGlobal.dataTransport.demand;
+          allNodes = [
+            ...stepGlobal.dataTransport.demand,
+            ...stepGlobal.dataTransport.supply,
+          ];
+          break;
+      }
+    }
+
+    const transitionNames = new Set<string>();
+    relevantNodes.forEach((node) => {
+      node.transitions?.forEach((transition) => {
+        Object.keys(transition).forEach((key) => {
+          transitionNames.add(key);
+        });
+      });
+    });
+
+    const missingNames = allNodes
+      .map((node) => node.name)
+      .filter((name) => !transitionNames.has(name));
+
+    return missingNames;
+  };
+
   const setStep = (newStep: number) => {
     setStepGlobal({ ...stepGlobal, currentStep: newStep });
   };
@@ -693,6 +758,7 @@ export const StepbyStepProvider: React.FC<{ children: ReactNode }> = ({
         createNodes,
         createTransition,
         deleteTransition,
+        getMissingValues,
         resetNodes,
         setNodeName,
         setQuantity,

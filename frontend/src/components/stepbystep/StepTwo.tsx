@@ -60,9 +60,7 @@ export const StepTwo = () => {
         <div className="flex justify-between">
           <Button colorScheme="whiteAlpha">Anterior</Button>
 
-          <Button type="submit" colorScheme="whiteAlpha">
-            Siguiente
-          </Button>
+          <Button colorScheme="whiteAlpha">Siguiente</Button>
         </div>
       </div>
     </>
