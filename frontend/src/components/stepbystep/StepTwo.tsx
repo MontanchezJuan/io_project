@@ -10,17 +10,17 @@ import { TransshipmentNodes } from "./render/TransshipmentNodes";
 import { DemandNodes } from "./render/DemandNodes";
 
 export const StepTwo = () => {
-  const { dataTransfer } = useStepbyStep();
+  const { getTotalDemandQuantity, getTotalSuplyQuantity, dataTransfer } = useStepbyStep();
 
   const { setTypeModal } = useHistoryModal();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const Title = (type: "Supply" | "Demand" | "Transshipment", word: string) => {
+  const Title = (type: "Supply" | "Demand" | "Transshipment", word: string, total: number) => {
     return (
       <div className="flex justify-between items-center">
         <p className="text-[24px] font-bold">
-          {type !== "Transshipment" ? `${word} total: ${word === "Demanda" ? useStepbyStep().getTotalDemandQuantity() : 0}` : `${word}`}
+          {type !== "Transshipment" ? `${word} total: ${total}` : `${word}`}
 
         </p>
 
@@ -42,19 +42,19 @@ export const StepTwo = () => {
       <HistoryNodeModal onClose={onClose} isOpen={isOpen} />
 
       <div className="flex flex-col w-full gap-4">
-        {Title("Supply", "Oferta")}
+        {Title("Supply", "Oferta", getTotalSuplyQuantity())}
 
         <SupplyNodes />
 
         {dataTransfer && dataTransfer.transshipment.length > 0 && (
           <>
-            {Title("Transshipment", "Transbordo")}
+            {Title("Transshipment", "Transbordo", 0)}
 
             <TransshipmentNodes />
           </>
         )}
 
-        {Title("Demand", "Demanda")}
+        {Title("Demand", "Demanda", getTotalDemandQuantity())}
 
         <DemandNodes />
 
