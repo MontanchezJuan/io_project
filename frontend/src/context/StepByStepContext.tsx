@@ -4,6 +4,7 @@ import { DemandNode, Node, SupplyNode } from "../interface/common";
 import { Step1 } from "../components/stepbystep/StepOne";
 import { Transbordo } from "../interface/transbordo";
 import { Transporte } from "../interface/transporte";
+import { Step4 } from "../components/stepbystep/StepFour";
 
 interface StepByStepContextType {
   activeStep: number;
@@ -18,20 +19,20 @@ interface StepByStepContextType {
   ) => void;
   dataTransfer: Transbordo;
   dataTransport: Transporte;
-  deleteTransition: (
-    type: ToT,
-    nodeName: string,
-    transitionNodeName: string
-  ) => void;
-  getMissingValues: (type: DST, method: ToT) => string[];
+  deleteTransition: (nodeName: string, transitionIndex: number) => void;
+  getMissingValues: (type: DST, method: ToT, currentNode: string) => string[];
+  getTotalDemandQuantity: () => number;
+  getTotalSuplyQuantity: () => number;
   resetNodes: (type: ToT) => void;
   setNodeName: (nodeName: string, newNodeName: string, type: ToT) => void;
   setQuantity: (nodeName: string, quantity: number, type: ToT) => void;
   setStep: (newStep: number) => void;
   setStep1: (newStep1: Step1) => void;
+  setStep2: () => void;
+  setStep3: () => void;
+  setStep4: (newStep: Step4) => void;
   step1: Step1;
-  getTotalDemandQuantity: () => number;
-  getTotalSuplyQuantity: () => number;
+  step4: Step4;
 }
 
 const StepbyStepContext = createContext<StepByStepContextType | undefined>(
@@ -42,6 +43,7 @@ interface InitialState {
   activeStep: number;
   currentStep: number;
   step1: Step1;
+  step4: Step4;
   dataTransport: Transporte;
   dataTransfer: Transbordo;
 }
@@ -49,14 +51,15 @@ interface InitialState {
 const InitialStep: InitialState = {
   activeStep: 1,
   currentStep: 0,
+  dataTransfer: { supply: [], demand: [], transshipment: [] },
+  dataTransport: { supply: [], demand: [] },
   step1: {
     method: "",
     supplyNodes: 0,
     demandNodes: 0,
     transshipmentNodes: 0,
   },
-  dataTransfer: { supply: [], demand: [], transshipment: [] },
-  dataTransport: { supply: [], demand: [] },
+  step4: { assignment: false },
 };
 
 const getInitialState = (): InitialState => {
@@ -319,24 +322,16 @@ export const StepbyStepProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const deleteTransition = (
-    type: ToT,
-    nodeName: string,
-    transitionNodeName: string
-  ) => {
-    const removeTransition = <T extends Node | SupplyNode | DemandNode>(
+  const deleteTransition = (nodeName: string, transitionIndex: number) => {
+    const removeTransitionByIndex = <T extends Node | SupplyNode | DemandNode>(
       nodes: T[],
       nodeName: string,
-      transitionNodeName: string
+      index: number
     ): T[] => {
       return nodes.map((node) => {
         if (node.name === nodeName) {
           const updatedTransitions = (node.transitions || []).filter(
-            (transition) =>
-              !Object.prototype.hasOwnProperty.call(
-                transition,
-                transitionNodeName
-              )
+            (_, i) => i !== index
           );
           return { ...node, transitions: updatedTransitions };
         }
@@ -344,58 +339,56 @@ export const StepbyStepProvider: React.FC<{ children: ReactNode }> = ({
       });
     };
 
-    if (type === "Transbordo") {
+    if (stepGlobal.step1.method === "Transbordo") {
       setStepGlobal((prev) => {
         if (prev) {
           const newTransfer = { ...prev.dataTransfer };
 
-          newTransfer.supply = removeTransition(
+          newTransfer.supply = removeTransitionByIndex(
             newTransfer.supply,
             nodeName,
-            transitionNodeName
+            transitionIndex
           );
-          newTransfer.demand = removeTransition(
+          newTransfer.demand = removeTransitionByIndex(
             newTransfer.demand,
             nodeName,
-            transitionNodeName
+            transitionIndex
           );
-          newTransfer.transshipment = removeTransition(
+          newTransfer.transshipment = removeTransitionByIndex(
             newTransfer.transshipment,
             nodeName,
-            transitionNodeName
+            transitionIndex
           );
 
           return {
             ...prev,
             dataTransfer: newTransfer,
           };
-        } else {
-          return prev;
         }
+        return prev;
       });
-    } else {
+    } else if (stepGlobal.step1.method === "Transporte") {
       setStepGlobal((prev) => {
         if (prev) {
           const newTransport = { ...prev.dataTransport };
 
-          newTransport.supply = removeTransition(
+          newTransport.supply = removeTransitionByIndex(
             newTransport.supply,
             nodeName,
-            transitionNodeName
+            transitionIndex
           );
-          newTransport.demand = removeTransition(
+          newTransport.demand = removeTransitionByIndex(
             newTransport.demand,
             nodeName,
-            transitionNodeName
+            transitionIndex
           );
 
           return {
             ...prev,
             dataTransport: newTransport,
           };
-        } else {
-          return prev;
         }
+        return prev;
       });
     }
   };
@@ -667,7 +660,7 @@ export const StepbyStepProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const getMissingValues = (type: DST, method: ToT) => {
+  const getMissingValues = (type: DST, method: ToT, currentNode: string) => {
     let relevantNodes: (Node | SupplyNode | DemandNode)[] = [];
     let allNodes: (Node | SupplyNode | DemandNode)[] = [];
 
@@ -717,22 +710,27 @@ export const StepbyStepProvider: React.FC<{ children: ReactNode }> = ({
 
     const transitionNames = new Set<string>();
     relevantNodes.forEach((node) => {
-      node.transitions?.forEach((transition) => {
-        Object.keys(transition).forEach((key) => {
-          transitionNames.add(key);
+      if (node.name === currentNode) {
+        node.transitions?.forEach((transition) => {
+          Object.keys(transition).forEach((key) => {
+            transitionNames.add(key);
+          });
         });
-      });
+      }
     });
 
     const missingNames = allNodes
       .map((node) => node.name)
-      .filter((name) => !transitionNames.has(name));
+      .filter((name) => !transitionNames.has(name) && currentNode !== name);
 
     return missingNames;
   };
 
   const setStep = (newStep: number) => {
-    setStepGlobal({ ...stepGlobal, currentStep: newStep });
+    setStepGlobal({
+      ...stepGlobal,
+      currentStep: newStep,
+    });
   };
 
   const setStep1 = (newStep1: Step1) => {
@@ -752,6 +750,31 @@ export const StepbyStepProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
+  const setStep2 = () => {
+    setStepGlobal({
+      ...stepGlobal,
+      currentStep: 2,
+      activeStep: 3,
+    });
+  };
+
+  const setStep3 = () => {
+    setStepGlobal({
+      ...stepGlobal,
+      currentStep: 3,
+      activeStep: 4,
+    });
+  };
+
+  const setStep4 = (newStep: Step4) => {
+    setStepGlobal({
+      ...stepGlobal,
+      currentStep: 4,
+      activeStep: 5,
+      step4: newStep,
+    });
+  };
+
   const getTotalDemandQuantity = () => {
     const demandNodes =
       stepGlobal.dataTransport.demand.length > 0
@@ -762,7 +785,7 @@ export const StepbyStepProvider: React.FC<{ children: ReactNode }> = ({
       0
     );
   };
-  
+
   const getTotalSuplyQuantity = () => {
     const suplyNodes =
       stepGlobal.dataTransport.supply.length > 0
@@ -783,13 +806,16 @@ export const StepbyStepProvider: React.FC<{ children: ReactNode }> = ({
         createTransition,
         deleteTransition,
         getMissingValues,
+        getTotalDemandQuantity,
+        getTotalSuplyQuantity,
         resetNodes,
         setNodeName,
         setQuantity,
         setStep,
         setStep1,
-        getTotalDemandQuantity,
-        getTotalSuplyQuantity
+        setStep2,
+        setStep3,
+        setStep4,
       }}
     >
       {children}

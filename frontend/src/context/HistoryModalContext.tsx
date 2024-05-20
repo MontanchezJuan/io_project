@@ -1,10 +1,8 @@
 import React, { createContext, useContext, useState } from "react";
-import { SupplyNode, DemandNode, Node } from "../interface/common";
+import { SupplyNode, Node } from "../interface/common";
 import { DST } from "./StepByStepContext";
 
 interface HistoryModalContextType {
-  historyDemand: DemandNode[];
-  setHistoryDemand: React.Dispatch<React.SetStateAction<DemandNode[]>>;
   historySupply: SupplyNode[];
   setHistorySupply: React.Dispatch<React.SetStateAction<SupplyNode[]>>;
   historyTransshipment: Node[];
@@ -22,7 +20,6 @@ interface Props {
 }
 
 export const HistoryModalProvider = ({ children }: Props) => {
-  const [historyDemand, setHistoryDemand] = useState<DemandNode[]>([]);
   const [historySupply, setHistorySupply] = useState<SupplyNode[]>([]);
   const [historyTransshipment, setHistoryTransshipment] = useState<Node[]>([]);
   const [typeModal, setTypeModal] = useState<DST>("Demand");
@@ -30,8 +27,6 @@ export const HistoryModalProvider = ({ children }: Props) => {
   return (
     <HistoryModalContext.Provider
       value={{
-        historyDemand,
-        setHistoryDemand,
         historySupply,
         setHistorySupply,
         historyTransshipment,

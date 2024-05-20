@@ -8,20 +8,30 @@ import { HistoryNodeModal } from "./HistoryNodeModal";
 import { SupplyNodes } from "./render/SupplyNodes";
 import { TransshipmentNodes } from "./render/TransshipmentNodes";
 import { DemandNodes } from "./render/DemandNodes";
+import Swal from "sweetalert2";
 
 export const StepTwo = () => {
-  const { getTotalDemandQuantity, getTotalSuplyQuantity, dataTransfer } = useStepbyStep();
+  const {
+    dataTransfer,
+    getTotalDemandQuantity,
+    getTotalSuplyQuantity,
+    setStep,
+    setStep2,
+  } = useStepbyStep();
 
   const { setTypeModal } = useHistoryModal();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const Title = (type: "Supply" | "Demand" | "Transshipment", word: string, total: number) => {
+  const Title = (
+    type: "Supply" | "Demand" | "Transshipment",
+    word: string,
+    total: number
+  ) => {
     return (
       <div className="flex justify-between items-center">
         <p className="text-[24px] font-bold">
           {type !== "Transshipment" ? `${word} total: ${total}` : `${word}`}
-
         </p>
 
         <Button
@@ -35,6 +45,18 @@ export const StepTwo = () => {
         </Button>
       </div>
     );
+  };
+
+  const handleNext = () => {
+    Swal.fire(
+      "Alerta",
+      "Ten en cuenta los valores que hayan quedado en 0",
+      "question"
+    ).then((result) => {
+      if (result.isConfirmed) {
+        setStep2();
+      }
+    });
   };
 
   return (
@@ -59,9 +81,13 @@ export const StepTwo = () => {
         <DemandNodes />
 
         <div className="flex justify-between">
-          <Button colorScheme="whiteAlpha">Anterior</Button>
+          <Button colorScheme="whiteAlpha" onClick={() => setStep(0)}>
+            Anterior
+          </Button>
 
-          <Button colorScheme="whiteAlpha">Siguiente</Button>
+          <Button colorScheme="whiteAlpha" onClick={handleNext}>
+            Siguiente
+          </Button>
         </div>
       </div>
     </>

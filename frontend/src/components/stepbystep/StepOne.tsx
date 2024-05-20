@@ -65,19 +65,12 @@ export const StepOne = () => {
         actions.setSubmitting(false);
       }}
     >
-      <Form className="flex flex-col gap-4 w-full items-center">
-        <div className="flex flex-col gap-4 w-1/2">
+      <Form className="flex flex-col gap-2 w-full items-center">
+        <div className="flex flex-col gap-2 w-1/2">
           <Field name="method">
             {({ field, form }: FieldProps) => (
               <>
-                <FormLabel>
-                  Método:{" "}
-                  {form.values.method && form.values.method === "Transporte" ? (
-                    <span className="text-secondary">{form.values.method}</span>
-                  ) : (
-                    <span className="text-primary">{form.values.method}</span>
-                  )}
-                </FormLabel>
+                <FormLabel>Método: {form.values.method}</FormLabel>
                 <Select placeholder="Seleccione un método" {...field}>
                   <option className="text-black" value="Transporte">
                     Transporte
