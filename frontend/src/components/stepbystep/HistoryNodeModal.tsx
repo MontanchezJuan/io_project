@@ -1,5 +1,6 @@
-import { ArrowForwardIcon } from "@chakra-ui/icons";
+import { useMemo } from "react";
 
+import { ArrowForwardIcon } from "@chakra-ui/icons";
 import {
   Button,
   Modal,
@@ -11,9 +12,11 @@ import {
   ModalOverlay,
   Select,
 } from "@chakra-ui/react";
+import { Field, FieldProps, Form, Formik } from "formik";
 
-import { DST, ToT, useStepbyStep } from "../../context/StepByStepContext";
+import { ToT, useStepbyStep } from "../../context/StepByStepContext";
 import { useHistoryModal } from "../../context/HistoryModalContext";
+import { Node, SupplyNode } from "../../interface/common";
 
 interface Props {
   isOpen: boolean;
@@ -21,21 +24,31 @@ interface Props {
 }
 
 export const HistoryNodeModal = ({ onClose, isOpen }: Props) => {
-  const { dataTransfer, dataTransport, step1 } = useStepbyStep();
+  const {
+    createTransition,
+    dataTransfer,
+    dataTransport,
+    getMissingValues,
+    step1,
+  } = useStepbyStep();
 
-  const { historyDemand, historySupply, historyTransshipment, typeModal } =
-    useHistoryModal();
+  const {
+    historySupply,
+    historyTransshipment,
+    setHistorySupply,
+    setHistoryTransshipment,
+    typeModal,
+  } = useHistoryModal();
 
   const TYPE: ToT = step1.method || "Transbordo";
 
   interface PropsItemModel {
-    type: DST;
     word: string;
     children: React.ReactNode;
   }
 
-  const selectData = (type: DST) => {
-    switch (type) {
+  const selectData = useMemo(() => {
+    switch (typeModal) {
       case "Demand":
         return TYPE === "Transbordo"
           ? dataTransfer.demand.map((demand, index) => (
@@ -68,11 +81,11 @@ export const HistoryNodeModal = ({ onClose, isOpen }: Props) => {
         ));
 
       default:
-        break;
+        return [];
     }
-  };
+  }, [typeModal, TYPE, dataTransfer, dataTransport]);
 
-  const ItemModal = ({ type, word, children }: PropsItemModel) => {
+  const ItemModal = ({ word, children }: PropsItemModel) => {
     return (
       <Modal onClose={onClose} size="xl" isOpen={isOpen} isCentered>
         <ModalOverlay />
@@ -80,31 +93,55 @@ export const HistoryNodeModal = ({ onClose, isOpen }: Props) => {
           <ModalHeader>Añadir transición de {word}</ModalHeader>
           <ModalCloseButton />
           <ModalBody className="flex flex-col items-center gap-4">
-            <div className="flex justify-around items-center w-full">
-              <div>
-                <Select placeholder={`Nodo de ${word}`}>
-                  {selectData(type)}
-                </Select>
-              </div>
+            <Formik
+              initialValues={{ fromNode: "", toNode: "" }}
+              onSubmit={(values, actions) => {
+                handleAddNode(values.fromNode, values.toNode);
 
-              <ArrowForwardIcon />
+                actions.setSubmitting(false);
+              }}
+            >
+              <Form className="flex justify-around items-center w-full">
+                <Field name="fromNode">
+                  {({ field }: FieldProps) => (
+                    <div>
+                      <Select placeholder={`Nodo de ${word}`} {...field}>
+                        {selectData}
+                      </Select>
+                    </div>
+                  )}
+                </Field>
 
-              <div>
-                <Select placeholder="Nodo">
-                  {dataTransfer.demand.map((demand, index) => (
-                    <option key={index}>{demand.name}</option>
-                  ))}
-                </Select>
-              </div>
+                <ArrowForwardIcon />
 
-              <Button
-                color="#fff"
-                bgColor="#472183"
-                _hover={{ backgroundColor: "#475183" }}
-              >
-                Añadir
-              </Button>
-            </div>
+                <Field name="toNode">
+                  {({ field, form }: FieldProps) => (
+                    <div>
+                      <Select placeholder="Nodo" {...field}>
+                        {getMissingValues(
+                          typeModal,
+                          TYPE,
+                          form.values.fromNode
+                        ).map((value, index) => (
+                          <option key={index} value={value}>
+                            {value}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
+                  )}
+                </Field>
+
+                <Button
+                  color="#fff"
+                  bgColor="#472183"
+                  _hover={{ backgroundColor: "#475183" }}
+                  type="submit"
+                >
+                  Añadir
+                </Button>
+              </Form>
+            </Formik>
 
             {children}
           </ModalBody>
@@ -116,57 +153,76 @@ export const HistoryNodeModal = ({ onClose, isOpen }: Props) => {
     );
   };
 
+  const handleAddNode = (
+    fromNode: string,
+    toNode: string,
+    weight: number = 0
+  ) => {
+    switch (typeModal) {
+      case "Supply":
+        setHistorySupply((prev) => {
+          if (prev) {
+            return prev
+              .map((node) => {
+                if (node.name === fromNode) {
+                  const updatedTransitions = (node.transitions || []).filter(
+                    (transition) =>
+                      !Object.prototype.hasOwnProperty.call(transition, toNode)
+                  );
+                  if (updatedTransitions.length > 0) {
+                    return { ...node, transitions: updatedTransitions };
+                  }
+                  return null;
+                }
+                return node;
+              })
+              .filter((node): node is SupplyNode => node !== null);
+          } else {
+            return prev;
+          }
+        });
+        break;
+      case "Transshipment":
+        setHistoryTransshipment((prev) => {
+          if (prev) {
+            return prev
+              .map((node) => {
+                if (node.name === fromNode) {
+                  const updatedTransitions = (node.transitions || []).filter(
+                    (transition) =>
+                      !Object.prototype.hasOwnProperty.call(transition, toNode)
+                  );
+                  if (updatedTransitions.length > 0) {
+                    return { ...node, transitions: updatedTransitions };
+                  }
+                  return null;
+                }
+                return node;
+              })
+              .filter((node): node is Node => node !== null);
+          } else {
+            return prev;
+          }
+        });
+        break;
+
+      default:
+        break;
+    }
+    createTransition(TYPE, fromNode, toNode, weight);
+  };
+
   switch (typeModal) {
     case "Demand":
       return (
-        <ItemModal word="demanda" type="Demand">
-          {historyDemand.length > 0 && (
-            <div className="flex flex-col items-center gap-1 w-full">
-              {historyDemand.map((demand, index) => (
-                <div
-                  className="flex flex-col items-center gap-1 w-full"
-                  key={index}
-                >
-                  <p>{demand.name}</p>
-
-                  {demand.transitions?.map((t, i) => {
-                    const transitionKey = Object.keys(t)[0];
-                    const transitionValue = t[transitionKey];
-                    return (
-                      <div
-                        className="flex justify-around items-center w-full"
-                        key={i}
-                      >
-                        <p>{demand.name}</p>
-
-                        <ArrowForwardIcon />
-
-                        <p>{transitionValue}</p>
-
-                        <ArrowForwardIcon />
-
-                        <p>{transitionKey}</p>
-
-                        <Button
-                          color="#fff"
-                          bgColor="#472183"
-                          _hover={{ backgroundColor: "#475183" }}
-                        >
-                          Restaurar
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          )}
+        <ItemModal word="demanda">
+          <></>
         </ItemModal>
       );
 
     case "Supply":
       return (
-        <ItemModal word="oferta" type="Supply">
+        <ItemModal word="oferta">
           {historySupply.length > 0 && (
             <div className="flex flex-col items-center gap-1 w-full">
               {historySupply.map((supply, index) => (
@@ -198,6 +254,13 @@ export const HistoryNodeModal = ({ onClose, isOpen }: Props) => {
                           color="#fff"
                           bgColor="#472183"
                           _hover={{ backgroundColor: "#475183" }}
+                          onClick={() =>
+                            handleAddNode(
+                              supply.name,
+                              transitionKey,
+                              transitionValue
+                            )
+                          }
                         >
                           Restaurar
                         </Button>
@@ -212,7 +275,7 @@ export const HistoryNodeModal = ({ onClose, isOpen }: Props) => {
       );
     case "Transshipment":
       return (
-        <ItemModal word="transbordo" type="Transshipment">
+        <ItemModal word="transbordo">
           {historyTransshipment.length > 0 && (
             <div className="flex flex-col items-center gap-1 w-full">
               {historyTransshipment.map((transshipment, index) => (
@@ -244,6 +307,13 @@ export const HistoryNodeModal = ({ onClose, isOpen }: Props) => {
                           color="#fff"
                           bgColor="#472183"
                           _hover={{ backgroundColor: "#475183" }}
+                          onClick={() =>
+                            handleAddNode(
+                              transshipment.name,
+                              transitionKey,
+                              transitionValue
+                            )
+                          }
                         >
                           Restaurar
                         </Button>

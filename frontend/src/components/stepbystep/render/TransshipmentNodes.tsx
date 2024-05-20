@@ -48,7 +48,8 @@ export const TransshipmentNodes = () => {
 
   const handleDeleteTransition = (
     transshipment: Node,
-    transitionKey: string
+    transitionKey: string,
+    transitionIndex: number
   ) => {
     Swal.fire(
       "Alerta",
@@ -61,36 +62,41 @@ export const TransshipmentNodes = () => {
         );
 
         if (transitionToDelete) {
-          setHistoryTransshipment((prev) => {
-            const nodeExists = prev.find(
-              (node) => node.name === transshipment.name
-            );
-            if (nodeExists) {
-              return prev.map((node) => {
-                if (node.name === transshipment.name) {
-                  return {
-                    ...node,
-                    transitions: [
-                      ...(node.transitions || []),
-                      transitionToDelete,
-                    ],
-                  };
-                }
-                return node;
-              });
-            } else {
-              return [
-                ...prev,
-                {
-                  ...transshipment,
-                  transitions: [transitionToDelete],
-                },
-              ];
-            }
-          });
-        }
+          const ok = dataTransfer.demand.some(
+            (node) => node.name === transitionKey
+          );
 
-        deleteTransition(TYPE, transshipment.name, transitionKey);
+          if (ok) {
+            setHistoryTransshipment((prev) => {
+              const nodeExists = prev.find(
+                (node) => node.name === transshipment.name
+              );
+              if (nodeExists) {
+                return prev.map((node) => {
+                  if (node.name === transshipment.name) {
+                    return {
+                      ...node,
+                      transitions: [
+                        ...(node.transitions || []),
+                        transitionToDelete,
+                      ],
+                    };
+                  }
+                  return node;
+                });
+              } else {
+                return [
+                  ...prev,
+                  {
+                    ...transshipment,
+                    transitions: [transitionToDelete],
+                  },
+                ];
+              }
+            });
+          }
+          deleteTransition(transshipment.name, transitionIndex);
+        }
       }
     });
   };
@@ -128,11 +134,14 @@ export const TransshipmentNodes = () => {
             </div>
 
             {transshipment.transitions &&
-              transshipment.transitions.map((transition, index) => {
+              transshipment.transitions.map((transition, transitionIndex) => {
                 const transitionKey = Object.keys(transition)[0];
                 const transitionValue = transition[transitionKey];
                 return (
-                  <div className="flex justify-around items-center" key={index}>
+                  <div
+                    className="flex justify-around items-center"
+                    key={transitionIndex}
+                  >
                     <p>{transshipment.name}</p>
                     <ArrowForwardIcon />
                     <div className="flex items-center gap-4">
@@ -157,7 +166,11 @@ export const TransshipmentNodes = () => {
                       <DeleteIcon
                         className="cursor-pointer hover:text-red-600"
                         onClick={() =>
-                          handleDeleteTransition(transshipment, transitionKey)
+                          handleDeleteTransition(
+                            transshipment,
+                            transitionKey,
+                            transitionIndex
+                          )
                         }
                       />
                     </Tooltip>

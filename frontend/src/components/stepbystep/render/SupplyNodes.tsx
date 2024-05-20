@@ -37,7 +37,7 @@ export const SupplyNodes = () => {
   useEffect(() => {
     if (dataTransfer.supply.length > 0) {
       setData(dataTransfer.supply);
-    } else {
+    } else if (dataTransport.supply.length > 0) {
       setData(dataTransport.supply);
     }
   }, [dataTransfer, dataTransport]);
@@ -66,7 +66,8 @@ export const SupplyNodes = () => {
 
   const handleDeleteTransition = (
     supply: SupplyNode,
-    transitionKey: string
+    transitionKey: string,
+    transitionIndex: number
   ) => {
     Swal.fire(
       "Alerta",
@@ -79,34 +80,47 @@ export const SupplyNodes = () => {
         );
 
         if (transitionToDelete) {
-          setHistorySupply((prev) => {
-            const nodeExists = prev.find((node) => node.name === supply.name);
-            if (nodeExists) {
-              return prev.map((node) => {
-                if (node.name === supply.name) {
-                  return {
-                    ...node,
-                    transitions: [
-                      ...(node.transitions || []),
-                      transitionToDelete,
-                    ],
-                  };
-                }
-                return node;
-              });
-            } else {
-              return [
-                ...prev,
-                {
-                  ...supply,
-                  transitions: [transitionToDelete],
-                },
-              ];
-            }
-          });
-        }
+          let ok = false;
+          if (TYPE === "Transbordo") {
+            ok = dataTransfer.transshipment.some(
+              (node) => node.name === transitionKey
+            );
+          } else {
+            ok = dataTransport.demand.some(
+              (node) => node.name === transitionKey
+            );
+          }
 
-        deleteTransition(TYPE, supply.name, transitionKey);
+          if (ok) {
+            setHistorySupply((prev) => {
+              const nodeExists = prev.find((node) => node.name === supply.name);
+              if (nodeExists) {
+                return prev.map((node) => {
+                  if (node.name === supply.name) {
+                    return {
+                      ...node,
+                      transitions: [
+                        ...(node.transitions || []),
+                        transitionToDelete,
+                      ],
+                    };
+                  }
+                  return node;
+                });
+              } else {
+                return [
+                  ...prev,
+                  {
+                    ...supply,
+                    transitions: [transitionToDelete],
+                  },
+                ];
+              }
+            });
+          }
+
+          deleteTransition(supply.name, transitionIndex);
+        }
       }
     });
   };
@@ -160,11 +174,14 @@ export const SupplyNodes = () => {
             </div>
 
             {supply.transitions &&
-              supply.transitions.map((transition, index) => {
+              supply.transitions.map((transition, transitionIndex) => {
                 const transitionKey = Object.keys(transition)[0];
                 const transitionValue = transition[transitionKey];
                 return (
-                  <div className="flex justify-around items-center" key={index}>
+                  <div
+                    className="flex justify-around items-center"
+                    key={transitionIndex}
+                  >
                     <p>{supply.name}</p>
 
                     <ArrowForwardIcon />
@@ -194,7 +211,11 @@ export const SupplyNodes = () => {
                       <DeleteIcon
                         className="cursor-pointer hover:text-red-600"
                         onClick={() =>
-                          handleDeleteTransition(supply, transitionKey)
+                          handleDeleteTransition(
+                            supply,
+                            transitionKey,
+                            transitionIndex
+                          )
                         }
                       />
                     </Tooltip>

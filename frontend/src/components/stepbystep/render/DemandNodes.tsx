@@ -15,7 +15,6 @@ import Swal from "sweetalert2";
 
 import { ToT, useStepbyStep } from "../../../context/StepByStepContext";
 import { DemandNode } from "../../../interface/common";
-import { useHistoryModal } from "../../../context/HistoryModalContext";
 
 export const DemandNodes = () => {
   const {
@@ -27,8 +26,6 @@ export const DemandNodes = () => {
     setQuantity,
     step1,
   } = useStepbyStep();
-
-  const { setHistoryDemand } = useHistoryModal();
 
   const TYPE: ToT = step1.method || "Transbordo";
 
@@ -66,7 +63,8 @@ export const DemandNodes = () => {
 
   const handleDeleteTransition = (
     demand: DemandNode,
-    transitionKey: string
+    transitionKey: string,
+    transitionIndex: number
   ) => {
     Swal.fire(
       "Alerta",
@@ -74,39 +72,7 @@ export const DemandNodes = () => {
       "question"
     ).then((result) => {
       if (result.isConfirmed) {
-        const transitionToDelete = demand.transitions?.find(
-          (t) => Object.keys(t)[0] === transitionKey
-        );
-
-        if (transitionToDelete) {
-          setHistoryDemand((prev) => {
-            const nodeExists = prev.find((node) => node.name === demand.name);
-            if (nodeExists) {
-              return prev.map((node) => {
-                if (node.name === demand.name) {
-                  return {
-                    ...node,
-                    transitions: [
-                      ...(node.transitions || []),
-                      transitionToDelete,
-                    ],
-                  };
-                }
-                return node;
-              });
-            } else {
-              return [
-                ...prev,
-                {
-                  ...demand,
-                  transitions: [transitionToDelete],
-                },
-              ];
-            }
-          });
-        }
-
-        deleteTransition(TYPE, demand.name, transitionKey);
+        deleteTransition(demand.name, transitionIndex);
       }
     });
   };
@@ -162,11 +128,14 @@ export const DemandNodes = () => {
             </div>
 
             {demand.transitions &&
-              demand.transitions.map((transition, index) => {
+              demand.transitions.map((transition, transitionIndex) => {
                 const transitionKey = Object.keys(transition)[0];
                 const transitionValue = transition[transitionKey];
                 return (
-                  <div className="flex justify-around items-center" key={index}>
+                  <div
+                    className="flex justify-around items-center"
+                    key={transitionIndex}
+                  >
                     <p>{demand.name}</p>
                     <ArrowForwardIcon />
                     <div className="flex items-center gap-4">
@@ -191,7 +160,11 @@ export const DemandNodes = () => {
                       <DeleteIcon
                         className="cursor-pointer hover:text-red-600"
                         onClick={() =>
-                          handleDeleteTransition(demand, transitionKey)
+                          handleDeleteTransition(
+                            demand,
+                            transitionKey,
+                            transitionIndex
+                          )
                         }
                       />
                     </Tooltip>

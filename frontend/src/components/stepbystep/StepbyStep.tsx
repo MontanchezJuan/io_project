@@ -12,17 +12,25 @@ import { HistoryModalProvider } from "../../context/HistoryModalContext";
 
 import { StepOne } from "./StepOne";
 import { StepTwo } from "./StepTwo";
+import { StepThree } from "./StepThree";
+import { StepFour } from "./StepFour";
+import { StepFive } from "./StepFive";
 
 export const StepbyStep = () => {
   const { currentStep, activeStep, setStep } = useStepbyStep();
 
   return (
-    <div className="w-2/3 h-full rounded-2xl bg-primary text-white p-8">
+    <div
+      className={`${
+        currentStep === 2 ? "w-6/7" : "w-2/3"
+      } h-full rounded-2xl bg-primary text-white p-8 mb-12`}
+    >
       <Tabs
         position="relative"
         variant="unstyled"
         index={currentStep}
         onChange={(index) => setStep(index)}
+        isLazy
       >
         <TabList>
           <Tab>Paso 1</Tab>
@@ -48,13 +56,13 @@ export const StepbyStep = () => {
             </HistoryModalProvider>
           </TabPanel>
           <TabPanel>
-            <p>three!</p>
+            <StepThree />
           </TabPanel>
           <TabPanel>
-            <p>four!</p>
+            <StepFour />
           </TabPanel>
           <TabPanel>
-            <p>five!</p>
+            <StepFive />
           </TabPanel>
           <TabPanel>
             <p>six!</p>
