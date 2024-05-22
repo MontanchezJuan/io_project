@@ -3,6 +3,7 @@ from flask_cors import CORS
 from models.transportation_problem import TransportationProblem
 from models.transshipment_problem import TransshipmentProblem
 from models.graph import Graph
+import traceback
 
 class Main:
     def __init__(self):
@@ -16,15 +17,11 @@ class Main:
                 supply:list[dict] = data.get("supply")
                 demand:list[dict] = data.get("demand")
                 graph = Graph(supply,demand)
-                respuesta =TransportationProblem.solve(graph)
-                json = graph.to_json()
-                return json
+                TransportationProblem.solucion_transporte(graph)
+                # json = graph.to_json()
+                return {}
             except Exception as e:
-                traceback = e.__traceback__
-                while traceback:
-                    print("Archivo:", traceback.tb_frame.f_code.co_filename)
-                    print("Línea:", traceback.tb_lineno)
-                    traceback = traceback.tb_next
+                traceback.print_exc()
                 return jsonify({'error': str(e)}), 400
     
         @self.app.route('/transshipment_problem', methods=['POST'])
@@ -35,14 +32,14 @@ class Main:
                 demand:list[dict] = data.get("demand")
                 transshipment:list[dict] = data.get("transshipment")
                 graph = Graph(supply,demand,transshipment)
-                json = graph.to_json()
-                return json
+                TransshipmentProblem.solucion_transbordo(graph)
+                # json = graph.to_json()
+                return {}
             except Exception as e:
-                traceback = e.__traceback__
-                while traceback:
-                    print("Archivo:", traceback.tb_frame.f_code.co_filename)
-                    print("Línea:", traceback.tb_lineno)
-                    traceback = traceback.tb_next
+                print(f"Se generó un error: {e}")
+                # Puedes obtener más información usando la clase de la excepción
+                print(f"Tipo de excepción: {type(e).__name__}")
+                traceback.print_exc()
                 return jsonify({'error': str(e)}), 400
             
     def run(self):
