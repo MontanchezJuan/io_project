@@ -58,64 +58,78 @@ class Graph:
         CII : dict[tuple,float]= {}
         for transition in self.transitions:
             if transition.origin in self.get_conjunto_i() and transition.destination in self.get_conjunto_i():
-                CII[f'{(transition.origin,transition.destination)}'] = transition.cost
+                CII[(transition.origin,transition.destination)] = transition.cost
         return CII
     
     def get_cij(self):
         CIJ : dict[tuple,float]= {}
         for transition in self.transitions:
             if transition.origin in self.get_conjunto_i() and transition.destination in self.get_conjunto_j():
-                CIJ[f'{(transition.origin,transition.destination)}'] = transition.cost
+                CIJ[(transition.origin,transition.destination)] = transition.cost
         return CIJ
     
     def get_cik(self):
         CIK : dict[tuple,float]= {}
         for transition in self.transitions:
             if transition.origin in self.get_conjunto_i() and transition.destination in self.get_conjunto_k():
-                CIK[f'{(transition.origin,transition.destination)}'] = transition.cost
+                CIK[(transition.origin,transition.destination)] = transition.cost
         return CIK
     
     def get_cji(self):
         CJI : dict[tuple,float]= {}
         for transition in self.transitions:
             if transition.origin in self.get_conjunto_j() and transition.destination in self.get_conjunto_i():
-                CJI[f'{(transition.origin,transition.destination)}'] = transition.cost
+                CJI[(transition.origin,transition.destination)] = transition.cost
         return CJI
     
     def get_cjj(self):
         CJJ : dict[tuple,float]= {}
         for transition in self.transitions:
             if transition.origin in self.get_conjunto_j() and transition.destination in self.get_conjunto_j():
-                CJJ[f'{(transition.origin,transition.destination)}'] = transition.cost
+                CJJ[(transition.origin,transition.destination)] = transition.cost
         return CJJ
     
     def get_cjk(self):
         CJK : dict[tuple,float]= {}
         for transition in self.transitions:
             if transition.origin in self.get_conjunto_j() and transition.destination in self.get_conjunto_k():
-                CJK[f'{(transition.origin,transition.destination)}'] = transition.cost
+                CJK[(transition.origin,transition.destination)] = transition.cost
         return CJK
     
     def get_cki(self):
-        KI : dict[tuple,float]= {}
+        CKI : dict[tuple,float]= {}
         for transition in self.transitions:
             if transition.origin in self.get_conjunto_k() and transition.destination in self.get_conjunto_i():
-                KI[f'{(transition.origin,transition.destination)}'] = transition.cost
-        return KI
+                CKI[(transition.origin,transition.destination)] = transition.cost
+        return CKI
     
     def get_ckj(self):
         CKJ : dict[tuple,float]= {}
         for transition in self.transitions:
             if transition.origin in self.get_conjunto_k() and transition.destination in self.get_conjunto_j():
-                CKJ[f'{(transition.origin,transition.destination)}'] = transition.cost
+                CKJ[(transition.origin,transition.destination)] = transition.cost
         return CKJ
     
     def get_ckk(self):
         CKK : dict[tuple,float]= {}
         for transition in self.transitions:
             if transition.origin in self.get_conjunto_k() and transition.destination in self.get_conjunto_k():
-                CKK[f'{(transition.origin,transition.destination)}'] = transition.cost
+                CKK[(transition.origin,transition.destination)] = transition.cost
         return CKK
+    
+    def get_entradas(self,node_name:str):
+        entradas: list[str] = []
+        for transition in self.transitions:
+            if transition.destination == node_name:
+                entradas.append(transition.origin)
+        return entradas
+    
+    def get_salidas(self,node_name:str):
+        salidas: list[str] = []
+        for transition in self.transitions:
+            if transition.origin == node_name:
+                salidas.append(transition.destination)
+        return salidas
     
     def get_a_oferta(self):
         a_oferta: dict[str,float] = {}
@@ -128,6 +142,18 @@ class Graph:
         for demand_node in self.demand:
             b_demanda[demand_node.name] =  demand_node.demand_quantity
         return b_demanda
+    
+    def get_total_oferta(self):
+        total_oferta = 0
+        for value in self.get_a_oferta().values():
+            total_oferta+= value
+        return total_oferta
+            
+    def get_total_demanda(self):
+        total_demanda = 0
+        for value in self.get_b_demanda().values():
+            total_demanda+= value
+        return total_demanda
     
     def to_json(self):
         json_dict: dict ={}
