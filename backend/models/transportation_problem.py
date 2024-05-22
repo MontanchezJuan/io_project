@@ -1,4 +1,5 @@
 from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus
+
 from models.graph import Graph
 
 class TransportationProblem:
@@ -53,6 +54,7 @@ class TransportationProblem:
 
         # Imprimir el valor de la función objetivo y variables
         valor_objetivo = problema.objective.value()
+
         print(f"Valor de la función objetivo: {valor_objetivo}")
 
         for i in conjunto_i:
