@@ -14,10 +14,12 @@ class Main:
         def transportation_problem():
             try:
                 data = request.get_json()
-                supply:list[dict] = data.get("supply")
-                demand:list[dict] = data.get("demand")
+                problem = data.get("problem")
+                assignments = data.get("assignments")
+                supply:list[dict] = problem.get("supply")
+                demand:list[dict] = problem.get("demand")
                 graph = Graph(supply,demand)
-                TransportationProblem.solucion_transporte(graph)
+                TransportationProblem.solucion_transporte(graph,assignments)
                 # json = graph.to_json()
                 return {}
             except Exception as e:
@@ -28,13 +30,14 @@ class Main:
         def transshipment_problem():
             try:
                 data = request.get_json()
-                supply:list[dict] = data.get("supply")
-                demand:list[dict] = data.get("demand")
-                transshipment:list[dict] = data.get("transshipment")
+                problem = data.get("problem")
+                assignments = data.get("assignments")
+                supply:list[dict] = problem.get("supply")
+                demand:list[dict] = problem.get("demand")
+                transshipment:list[dict] = problem.get("transshipment")
                 graph = Graph(supply,demand,transshipment)
-                TransshipmentProblem.solucion_transbordo(graph)
-                # json = graph.to_json()
-                return {}
+                TransshipmentProblem.solucion_transbordo(graph,assignments)
+                return {"problem":graph.response(), "assignments":assignments}
             except Exception as e:
                 print(f"Se generó un error: {e}")
                 # Puedes obtener más información usando la clase de la excepción
