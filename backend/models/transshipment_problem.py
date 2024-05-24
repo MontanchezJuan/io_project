@@ -4,6 +4,7 @@ from models.graph import Graph
 class TransshipmentProblem:
     @staticmethod
     def solucion_transbordo(graph: Graph, assignments : int):
+        final_assignments = assignments
         problema = LpProblem("PROBLEMA_DE_TRANSBORDO", LpMinimize)
         big_m = 10000000
 
@@ -49,8 +50,8 @@ class TransshipmentProblem:
                 if assignments >= graph.get_minimo_asignaciones():
                     problema += lpSum(yi[i] for i in graph.get_conjunto_i()) == assignments
                 else:
-                    assignments = graph.get_minimo_asignaciones()
-                    problema += lpSum(yi[i] for i in graph.get_conjunto_i()) == assignments
+                    final_assignments = graph.get_minimo_asignaciones()
+                    problema += lpSum(yi[i] for i in graph.get_conjunto_i()) == final_assignments
                 xi_ = xii | xij | xik
                 x_i = xii | xji | xki
                 for nodo_oferta in graph.get_conjunto_i():
@@ -77,8 +78,8 @@ class TransshipmentProblem:
                 if assignments >= graph.get_minimo_asignaciones():
                     problema += lpSum(yk[k] for k in graph.get_conjunto_k()) == assignments
                 else:
-                    assignments = graph.get_minimo_asignaciones()
-                    problema += lpSum(yk[k] for k in graph.get_conjunto_k()) == assignments
+                    final_assignments = graph.get_minimo_asignaciones()
+                    problema += lpSum(yk[k] for k in graph.get_conjunto_k()) == final_assignments
                 xk_ = xki | xkj | xkk
                 x_k = xik | xjk | xkk
                 for nodo_demanda in graph.get_conjunto_k():
@@ -139,3 +140,4 @@ class TransshipmentProblem:
                             graph.update_transition(nodo_transbordo,nodo_salida,variable.varValue)
 
         graph.remove_unreachable_nodes()
+        return final_assignments, problema.objective.value()
