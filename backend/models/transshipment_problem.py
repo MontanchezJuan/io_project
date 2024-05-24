@@ -3,7 +3,7 @@ from models.graph import Graph
 
 class TransshipmentProblem:
     @staticmethod
-    def solucion_transbordo(graph: Graph):
+    def solucion_transbordo(graph: Graph, assignments : int):
         problema = LpProblem("PROBLEMA_DE_TRANSBORDO", LpMinimize)
         big_m = 10000000
 
@@ -17,7 +17,6 @@ class TransshipmentProblem:
         xki = LpVariable.dicts("X", graph.get_cki(), lowBound=0, cat='Continuous')
         xkj = LpVariable.dicts("X", graph.get_ckj(), lowBound=0, cat='Continuous')
         xkk = LpVariable.dicts("X", graph.get_ckk(), lowBound=0, cat='Continuous')
-        # yi = LpVariable.dicts("Yi", conjunto_i, lowBound=0, upBound=1, cat='Binary')
         
         # Función Objetivo
         problema += (  lpSum([graph.get_cii()[(i, j)] * xii[(i,j)] for i,j in graph.get_cii().keys()])
@@ -32,7 +31,6 @@ class TransshipmentProblem:
         
         # Restricciones
         if graph.get_total_oferta() > graph.get_total_demanda():
-            print(graph.get_total_oferta() > graph.get_total_demanda())
             # oferta
             for nodo_oferta in graph.get_conjunto_i():
                 xi_ = xii | xij | xik
@@ -44,18 +42,50 @@ class TransshipmentProblem:
                 xk_ = xki | xkj | xkk
                 x_k = xik | xjk | xkk
                 problema += lpSum([x_k[(j,nodo_demanda)] for j in graph.get_entradas(nodo_demanda)]) == graph.get_b_demanda()[nodo_demanda] + lpSum([xk_[(nodo_demanda,j)] for j in graph.get_salidas(nodo_demanda)])             
+                
+            # Asignacion
+            if assignments > 0:
+                yi = LpVariable.dicts("Yi", graph.get_conjunto_i(), lowBound=0, upBound=1, cat='Binary')
+                if assignments >= graph.get_minimo_asignaciones():
+                    problema += lpSum(yi[i] for i in graph.get_conjunto_i()) == assignments
+                else:
+                    assignments = graph.get_minimo_asignaciones()
+                    problema += lpSum(yi[i] for i in graph.get_conjunto_i()) == assignments
+                xi_ = xii | xij | xik
+                x_i = xii | xji | xki
+                for nodo_oferta in graph.get_conjunto_i():
+                    for salida_oferta in graph.get_salidas(nodo_oferta):
+                        problema += xi_[(nodo_oferta,salida_oferta)] <= yi[nodo_oferta]*big_m
+                    for entrada_oferta in graph.get_entradas(nodo_oferta):
+                        problema += x_i[(entrada_oferta,nodo_oferta)] <= yi[nodo_oferta]*big_m
+            #! poner las restricciones de rango >=0       
         elif graph.get_total_oferta() < graph.get_total_demanda():
             # oferta
             for nodo_oferta in graph.get_conjunto_i():
                 xi_ = xii | xij | xik
                 x_i = xii | xji | xki
                 problema += lpSum([xi_[(nodo_oferta,j)] for j in graph.get_salidas(nodo_oferta)]) == graph.get_a_oferta()[nodo_oferta] + lpSum([x_i[(j,nodo_oferta)] for j in graph.get_entradas(nodo_oferta)])
-            
             # demanda
             for nodo_demanda in graph.get_conjunto_k():
                 xk_ = xki | xkj | xkk
                 x_k = xik | xjk | xkk
                 problema += lpSum([x_k[(j,nodo_demanda)] for j in graph.get_entradas(nodo_demanda)]) <= graph.get_b_demanda()[nodo_demanda] + lpSum([xk_[(nodo_demanda,j)] for j in graph.get_salidas(nodo_demanda)])
+                
+            # Asignacion
+            if assignments > 0:
+                yk = LpVariable.dicts("Yi", graph.get_conjunto_k(), lowBound=0, upBound=1, cat='Binary')
+                if assignments >= graph.get_minimo_asignaciones():
+                    problema += lpSum(yk[k] for k in graph.get_conjunto_k()) == assignments
+                else:
+                    assignments = graph.get_minimo_asignaciones()
+                    problema += lpSum(yk[k] for k in graph.get_conjunto_k()) == assignments
+                xk_ = xki | xkj | xkk
+                x_k = xik | xjk | xkk
+                for nodo_demanda in graph.get_conjunto_k():
+                    for salida_demanda in graph.get_salidas(nodo_demanda):
+                        problema += xk_[(nodo_demanda,salida_demanda)] <= yk[nodo_demanda]*big_m
+                    for entrada_demanda in graph.get_entradas(nodo_demanda):
+                        problema += x_k[(nodo_demanda,entrada_demanda)] <= yk[nodo_demanda]*big_m  
         else:
             # oferta
             for nodo_oferta in graph.get_conjunto_i():
@@ -70,50 +100,42 @@ class TransshipmentProblem:
                 problema += lpSum([x_k[(j,nodo_demanda)] for j in graph.get_entradas(nodo_demanda)]) == graph.get_b_demanda()[nodo_demanda] + lpSum([xk_[(nodo_demanda,j)] for j in graph.get_salidas(nodo_demanda)])
                 
         # transbordo
-        
         for nodo_transbordo in graph.get_conjunto_j():
             xj_ = xji | xjj | xjk
             x_j = xij | xjj | xkj
             problema += lpSum([x_j[(j,nodo_transbordo)] for j in graph.get_entradas(nodo_transbordo)]) == lpSum([xj_[(nodo_transbordo,j)] for j in graph.get_salidas(nodo_transbordo)])   
         
-        
-        
-        print(problema)
         problema.solve()
-        print(f"Estado del problema: {LpStatus[problema.status]}")
-
-        # Imprimir resultados
-        for var in problema.variables():
-            print(f"{var.name} = {var.varValue}")
-
-        print(f"Valor objetivo: {problema.objective.value()}")
         
-        # # Restricción oferta
-        # for i in graph.get_conjunto_i():
-        #     problema += lpSum([xij[i][j] for j in conjunto_j]) <= AOFERTA[i], f"Oferta_{i}"
+        # estructurar los datos del grafo para la respuesta
+        for nodo_oferta in graph.get_conjunto_i():
+            xi_ = xii | xij | xik
+            for nodo_salida in graph.get_salidas(nodo_oferta):
+                for variable in problema.variables():
+                    if str(xi_[(nodo_oferta,nodo_salida)])==str(variable.name):
+                        if variable.varValue ==0:
+                            graph.delete_transition(nodo_oferta,nodo_salida)
+                        else:
+                            graph.update_transition(nodo_oferta,nodo_salida,variable.varValue)
 
-        # # Restricción demanda
-        # for k in conjunto_k:
-        #     problema += lpSum([xjk[j][k] for j in conjunto_j]) == BDEMANDA[k], f"Demanda_{k}"
+        for nodo_demanda in graph.get_conjunto_k():
+            xk_ = xki | xkj | xkk
+            for nodo_salida in graph.get_salidas(nodo_demanda):
+                for variable in problema.variables():
+                    if str(xk_[(nodo_demanda,nodo_salida)])==str(variable.name):
+                        if variable.varValue ==0:
+                            graph.delete_transition(nodo_demanda,nodo_salida)
+                        else:
+                            graph.update_transition(nodo_demanda,nodo_salida,variable.varValue)
 
-        # # Restricción transbordo
-        # for j in conjunto_j:
-        #     problema += lpSum([xij[i][j] for i in conjunto_i]) == lpSum([xjk[j][k] for k in conjunto_k]), f"balance_{j}"
+        for nodo_transbordo in graph.get_conjunto_j():
+            xj_ = xji | xjj | xjk
+            for nodo_salida in graph.get_salidas(nodo_transbordo):
+                for variable in problema.variables():
+                    if str(xj_[(nodo_transbordo,nodo_salida)])==str(variable.name):
+                        if variable.varValue ==0:
+                            graph.delete_transition(nodo_transbordo,nodo_salida)
+                        else:
+                            graph.update_transition(nodo_transbordo,nodo_salida,variable.varValue)
 
-        # # Restricción asignación
-        # problema += lpSum([yi[i] for i in conjunto_i]) == asig, "eqAsi"
-
-        # # Restricción BIGM
-        # for i in conjunto_i:
-        #     for j in conjunto_j:
-        #         problema += xij[i][j] <= big_m * yi[i], f"eqBigM_{i}_{j}"
-
-        # # Resolver el problema
-        # problema.solve()
-        # print(f"Estado del problema: {LpStatus[problema.status]}")
-
-        # # Imprimir resultados
-        # for var in problema.variables():
-        #     print(f"{var.name} = {var.varValue}")
-
-        # print(f"Valor objetivo: {problema.objective.value()}")
+        graph.remove_unreachable_nodes()

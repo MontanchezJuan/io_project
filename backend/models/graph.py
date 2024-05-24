@@ -32,6 +32,11 @@ class Graph:
             destination,cost = next(iter(transition.items()))
             self.transitions.append(Transition(origin,destination,cost))
         
+    def delete_transition(self,origin, destination):
+        for transition in self.transitions:
+            if transition.origin == origin and transition.destination == destination:
+                self.transitions.remove(transition)
+        
     def get_conjunto_i(self):
         conjunto_i:list[str] = []
         for supply_node in self.supply:
@@ -155,45 +160,110 @@ class Graph:
             total_demanda+= value
         return total_demanda
     
-    def to_json(self):
-        json_dict: dict ={}
-        json_dict["conjunto_i"] = self.get_conjunto_i()
-        json_dict["conjunto_j"] = self.get_conjunto_j()
-        if len(self.transshipment)>0:
-            json_dict["conjunto_k"] = self.get_conjunto_k()
-        json_dict["CII"] = self.get_cii()
-        json_dict["CIJ"] = self.get_cij()
-        json_dict["CIk"] = self.get_cik()
-        json_dict["CJI"] = self.get_cji()
-        json_dict["CJJ"] = self.get_cjj()
-        json_dict["CJK"] = self.get_cjk()
-        json_dict["CKI"] = self.get_cki()
-        json_dict["CKJ"] = self.get_ckj()
-        json_dict["CKK"] = self.get_ckk()
-        json_dict["a_oferta"] = self.get_a_oferta()
-        json_dict["b_demanda"] = self.get_b_demanda()
-        return json.dumps(json_dict)
-
-                    
-
-    # def to_json(self):
-    #     return json.dumps(self.obj_to_dict(self), indent=4)
-
-    # def obj_to_dict(self,obj):
-    #     # Si el objeto es una lista o un diccionario, procesar recursivamente
-    #     if isinstance(obj, list):
-    #         return [self.obj_to_dict(i) for i in obj]
-    #     elif isinstance(obj, dict):
-    #         return {k: self.obj_to_dict(v) for k, v in obj.items()}
-        
-    #     # Si el objeto es de una clase definida por el usuario, convertir sus atributos a un diccionario
-    #     elif hasattr(obj, "__dict__"):
-    #         return {k: self.obj_to_dict(v) for k, v in obj.__dict__.items() if not k.startswith('_')}
-        
-    #     # Si el objeto es de un tipo primitivo, devolverlo tal cual
-    #     else:
-    #         return obj
-
+    def get_minimo_asignaciones(self):
+        if self.get_total_oferta()>self.get_total_demanda():
+            total_tmp = self.get_total_oferta()
+            count = len(self.get_conjunto_i())
+            for value in sorted(self.get_a_oferta().values()):
+                total_tmp -= value
+                if total_tmp <= self.get_total_demanda():
+                    return count
+                else:
+                    count -= 1
+            return count
+        else:
+            total_tmp = self.get_total_demanda()
+            count = len(self.get_conjunto_k())
+            for value in sorted(self.get_b_demanda().values()):
+                total_tmp -= value
+                if total_tmp <= self.get_total_oferta():
+                    return count
+                else:
+                    count -= 1
+            return count
+    
+    def remove_unreachable_nodes(self):
+        to_delete = []
+        for node in self.supply:
+            delete = True
+            for transition in self.transitions:
+                if node.name in [transition.origin,transition.destination]:
+                    delete = False
+            if delete == True:
+                to_delete.append(node)
+        for node in to_delete:
+            self.supply.remove(node)
+        to_delete = []
+        for node in self.demand:
+            delete = True
+            for transition in self.transitions:
+                if node.name in [transition.origin,transition.destination]:
+                    delete = False
+            if delete == True:
+                to_delete.append(node)
+        for node in to_delete:    
+            self.demand.remove(node)
+        to_delete = []
+        for node in self.transshipment:
+            delete = True
+            for transition in self.transitions:
+                if node.name in [transition.origin,transition.destination]:
+                    delete = False
+            if delete == True:
+                to_delete.append(node)
+        for node in to_delete:    
+            self.transshipment.remove(node)
+    
+    def update_transition(self, origin, destination, quantity):
+        for transition in self.transitions:
+            if transition.origin == origin and transition.destination == destination:
+                transition.cost = transition.cost * quantity
+    
+    def response(self):
+        return {"supply":self.supply_json(),
+                "demand":self.demand_json(),
+                "transshipment":self.transshipment_json()}
+    
+    def supply_json(self):
+        supply_list: list = []
+        for supply_node in self.supply:
+            node_json:dict = {}
+            transitions_list: list = []
+            for transition in self.transitions:
+                if transition.origin == supply_node.name:
+                    transitions_list.append({transition.destination:transition.cost})
+            node_json["name"] = supply_node.name
+            node_json["supply_quantity"] = supply_node.supply_quantity
+            node_json["transitions"] = transitions_list
+            supply_list.append(node_json)
+        return supply_list
+    
+    def demand_json(self):
+        demand_list: list = []
+        for demand_node in self.demand:
+            node_json:dict = {}
+            transitions_list: list = []
+            for transition in self.transitions:
+                if transition.origin == demand_node.name:
+                    transitions_list.append({transition.destination:transition.cost})
+            node_json["name"] = demand_node.name
+            node_json["demand_quantity"] = demand_node.demand_quantity
+            node_json["transitions"] = transitions_list
+            demand_list.append(node_json)
+        return demand_list
+    
+    def transshipment_json(self):
+        transshipment_list: list = []
+        for transshipment_node in self.transshipment:
+            node_json:dict = {}
+            transitions_list: list = []
+            for transition in self.transitions:
+                if transition.origin == transshipment_node.name:
+                    transitions_list.append({transition.destination:transition.cost})
+            node_json["name"] = transshipment_node.name
+            node_json["transitions"] = transitions_list
+            transshipment_list.append(node_json)
+        return transshipment_list
 
 class Node:
     def __init__(self, name:str) -> None:

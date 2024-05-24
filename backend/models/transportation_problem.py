@@ -4,7 +4,7 @@ from models.graph import Graph
 
 class TransportationProblem:
     @staticmethod
-    def solucion_transporte(graph: Graph):
+    def solucion_transporte(graph: Graph, assignments: int):
         problema = LpProblem("PROBLEMA_DE_TRANSPORTE", LpMinimize)
 
         # Obtener conjuntos y parámetros del objeto graph
