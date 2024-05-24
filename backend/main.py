@@ -19,7 +19,7 @@ class Main:
                 supply:list[dict] = problem.get("supply")
                 demand:list[dict] = problem.get("demand")
                 graph = Graph(supply,demand)
-                TransportationProblem.solucion_transporte(graph,assignments)
+                assignments = TransportationProblem.solucion_transporte(graph,assignments)
                 # json = graph.to_json()
                 return {}
             except Exception as e:
@@ -36,8 +36,8 @@ class Main:
                 demand:list[dict] = problem.get("demand")
                 transshipment:list[dict] = problem.get("transshipment")
                 graph = Graph(supply,demand,transshipment)
-                TransshipmentProblem.solucion_transbordo(graph,assignments)
-                return {"problem":graph.response(), "assignments":assignments}
+                assignments,objective = TransshipmentProblem.solucion_transbordo(graph,assignments)
+                return {"problem":graph.response(), "assignments":assignments, "objective":objective}
             except Exception as e:
                 print(f"Se generó un error: {e}")
                 # Puedes obtener más información usando la clase de la excepción

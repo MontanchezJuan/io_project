@@ -1,14 +1,34 @@
 import json
 
+class Node:
+    def __init__(self, name:str) -> None:
+        self.name = name
+    
+class SupplyNode(Node):
+    def __init__(self, name:str, supply_quantity:float) -> None:
+        self.name = name
+        self.supply_quantity = supply_quantity
+
+class DemandNode(Node):
+    def __init__(self, name:str, demand_quantity:float) -> None:
+        self.name = name
+        self.demand_quantity = demand_quantity
+    
+class Transition:
+    def __init__(self, origin : Node , destination: Node , cost: float) -> None:
+        self.origin = origin 
+        self.destination = destination 
+        self.cost= cost
+
 class Graph:
     def __init__(self, supply: list[dict] = [], demand:list[dict] = [] , transshipment: list[dict] = []) -> None:
         self.supply : list[SupplyNode] = []
         self.demand : list[DemandNode] = []
         self.transshipment : list[Node] = []
         self.transitions : list[Transition] = []
-        self.estructure(supply,demand,transshipment)
+        self.structure(supply,demand,transshipment)
         
-    def estructure(self,supply:list[dict], demand:list[dict], transshipment:list[dict]):
+    def structure(self,supply:list[dict], demand:list[dict], transshipment:list[dict]):
         for supply_node in supply:
             name = supply_node.get("name")
             supply_quantity = supply_node.get("supply_quantity")
@@ -218,6 +238,20 @@ class Graph:
         for transition in self.transitions:
             if transition.origin == origin and transition.destination == destination:
                 transition.cost = transition.cost * quantity
+                self.update_nodes(transition, quantity)
+            
+    def update_nodes(self,transition:Transition, quantity):
+        for supply_node in self.supply:
+            if transition.origin == supply_node.name:
+                supply_node.supply_quantity -= quantity
+            if transition.destination == supply_node.name:
+                supply_node.supply_quantity += quantity
+        for demand_node in self.demand:
+            if transition.origin == demand_node.name:
+                demand_node.demand_quantity += quantity
+            if transition.destination == demand_node.name:
+                demand_node.demand_quantity -= quantity
+                
     
     def response(self):
         return {"supply":self.supply_json(),
@@ -264,23 +298,3 @@ class Graph:
             node_json["transitions"] = transitions_list
             transshipment_list.append(node_json)
         return transshipment_list
-
-class Node:
-    def __init__(self, name:str) -> None:
-        self.name = name
-    
-class SupplyNode(Node):
-    def __init__(self, name:str, supply_quantity:float) -> None:
-        self.name = name
-        self.supply_quantity = supply_quantity
-
-class DemandNode(Node):
-    def __init__(self, name:str, demand_quantity:float) -> None:
-        self.name = name
-        self.demand_quantity = demand_quantity
-    
-class Transition:
-    def __init__(self, origin : Node , destination: Node , cost: float) -> None:
-        self.origin = origin 
-        self.destination = destination 
-        self.cost= cost
