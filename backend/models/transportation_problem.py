@@ -1,4 +1,5 @@
 from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus
+
 from models.graph import Graph
 
 
