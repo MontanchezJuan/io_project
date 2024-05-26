@@ -286,7 +286,7 @@ class TransshipmentProblem:
             "objective": get_objective(problema),
             "constraints": get_constraints(problema),
             "variables": get_variables(problema),
-            "parametros": get_parameters(problema),
+            "parameters": get_parameters(problema),
         }
 
         graph.remove_unreachable_nodes()
