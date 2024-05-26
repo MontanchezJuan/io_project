@@ -1,4 +1,5 @@
 from pulp import LpProblem, LpMinimize, LpVariable, lpSum
+
 from models.graph import Graph
 import re
 
@@ -198,3 +199,4 @@ class TransportationProblem:
 
         graph.remove_unreachable_nodes()
         return final_assignments, problema.objective.value(), problem_dict
+
