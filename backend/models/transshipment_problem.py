@@ -1,6 +1,6 @@
-from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus, LpAffineExpression
+from pulp import LpProblem, LpMinimize, LpVariable, lpSum
 from models.graph import Graph
-import json
+import re
 
 
 class TransshipmentProblem:
@@ -249,21 +249,21 @@ class TransshipmentProblem:
 
         # Función para obtener la representación de la función objetivo
         def get_objective(problem):
-            return str(problem.objective)
+            return formatear_ecuaciones([str(problem.objective)])[0]
 
         # Función para obtener la representación de las restricciones
         def get_constraints(problem):
             constraints = []
             for name, constraint in problem.constraints.items():
                 constraints.append(f"{constraint}")
-            return constraints
+            return formatear_ecuaciones(constraints)
 
         # Función para obtener la representación de las variables
         def get_variables(problem):
             variables = []
             for variable in problem.variables():
                 variables.append(f"{variable.name} = {variable.varValue}")
-            return variables
+            return formatear_ecuaciones(variables)
 
         # Función para obtener los parámetros
         def get_parameters(problem):
@@ -271,7 +271,15 @@ class TransshipmentProblem:
             # En este ejemplo, simplemente agregamos los coeficientes de las variables en la función objetivo
             for variable in problem.variables():
                 parameters.append(f"{variable.name}: {problem.objective.get(variable)}")
-            return parameters
+            return formatear_ecuaciones(parameters)
+
+        def formatear_ecuaciones(lista_ecuaciones):
+            ecuaciones_formateadas = []
+            for ecuacion in lista_ecuaciones:
+                # Eliminar caracteres especiales y guiones bajos
+                ecuacion_formateada = re.sub(r"[_()',]", "", ecuacion)
+                ecuaciones_formateadas.append(ecuacion_formateada)
+            return ecuaciones_formateadas
 
         # Crear el diccionario con los datos del problema
         problem_dict = {
