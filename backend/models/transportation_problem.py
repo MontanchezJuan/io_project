@@ -1,6 +1,7 @@
 from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus
 
 from models.graph import Graph
+import json
 
 
 class TransportationProblem:
@@ -138,6 +139,7 @@ class TransportationProblem:
                     f"Demanda_{nodo_demanda}",
                 )
 
+        print(problema)
         # Resolver el problema
         problema.solve()
 
@@ -152,5 +154,41 @@ class TransportationProblem:
                             graph.update_transition(
                                 nodo_oferta, nodo_salida, variable.varValue
                             )
+
+        # Función para obtener la representación de la función objetivo
+        def get_objective(problem):
+            return str(problem.objective)
+
+        # Función para obtener la representación de las restricciones
+        def get_constraints(problem):
+            constraints = []
+            for name, constraint in problem.constraints.items():
+                constraints.append(f"{constraint}")
+            return constraints
+
+        # Función para obtener la representación de las variables
+        def get_variables(problem):
+            variables = []
+            for variable in problem.variables():
+                variables.append(f"{variable.name} = {variable.varValue}")
+            return variables
+
+        # Función para obtener los parámetros
+        def get_parameters(problem):
+            parameters = []
+            # En este ejemplo, simplemente agregamos los coeficientes de las variables en la función objetivo
+            for variable in problem.variables():
+                parameters.append(f"{variable.name}: {problem.objective.get(variable)}")
+            return parameters
+
+        # Crear el diccionario con los datos del problema
+        problem_dict = {
+            "objective": get_objective(problema),
+            "constraints": get_constraints(problema),
+            "variables": get_variables(problema),
+            "parametros": get_parameters(problema),
+        }
+
         graph.remove_unreachable_nodes()
-        return final_assignments, problema.objective.value()
+        return final_assignments, problema.objective.value(), problem_dict
+
