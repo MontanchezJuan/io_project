@@ -7,7 +7,7 @@ import {
   TabPanel,
 } from "@chakra-ui/react";
 
-import { useStepbyStep } from "../../context/StepByStepContext";
+import { useStepByStep } from "../../hooks/useStepByStep";
 import { HistoryModalProvider } from "../../context/HistoryModalContext";
 
 import { StepOne } from "./StepOne";
@@ -15,14 +15,15 @@ import { StepTwo } from "./StepTwo";
 import { StepThree } from "./StepThree";
 import { StepFour } from "./StepFour";
 import { StepFive } from "./StepFive";
+import { StepSix } from "./StepSix";
 
 export const StepbyStep = () => {
-  const { currentStep, activeStep, setStep } = useStepbyStep();
+  const { currentStep, activeStep, setStep } = useStepByStep();
 
   return (
     <div
       className={`${
-        currentStep === 2 ? "w-6/7" : "w-2/3"
+        currentStep === 2 ? "w-6/7" : currentStep === 4 ? "w-6/7" : "w-2/3"
       } h-full rounded-2xl bg-primary text-white p-8 mb-12`}
     >
       <Tabs
@@ -65,7 +66,7 @@ export const StepbyStep = () => {
             <StepFive />
           </TabPanel>
           <TabPanel>
-            <p>six!</p>
+            <StepSix />
           </TabPanel>
         </TabPanels>
       </Tabs>

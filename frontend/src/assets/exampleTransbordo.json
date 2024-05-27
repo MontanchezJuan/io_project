@@ -1,0 +1,65 @@
+{
+  "supply": [
+    {
+      "name": "Manizales",
+      "supply_quantity": 120,
+      "transitions": [
+        {
+          "Quindío": 90
+        },
+        {
+          "Medellín": 85
+        }
+      ]
+    },
+    {
+      "name": "Pereira",
+      "supply_quantity": 90,
+      "transitions": [
+        {
+          "Quindío": 85
+        },
+        {
+          "Medellín": 47
+        }
+      ]
+    }
+  ],
+  "demand": [
+    {
+      "name": "Bogotá",
+      "demand_quantity": 120,
+      "transitions": [
+        {
+          "Cartagena": 15
+        }
+      ]
+    },
+    {
+      "name": "Cartagena",
+      "demand_quantity": 170,
+      "transitions": []
+    }
+  ],
+  "transshipment": [
+    {
+      "name": "Quindío",
+      "transitions": [
+        {
+          "Bogotá": 14
+        }
+      ]
+    },
+    {
+      "name": "Medellín",
+      "transitions": [
+        {
+          "Bogotá": 10
+        },
+        {
+          "Cartagena": 20
+        }
+      ]
+    }
+  ]
+}
