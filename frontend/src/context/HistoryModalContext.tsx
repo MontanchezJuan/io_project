@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { SupplyNode, Node } from "../interface/common";
-import { DST } from "./StepByStepContext";
+import { DST } from "../interface/context/stepbystep.interface";
 
 interface HistoryModalContextType {
   historySupply: SupplyNode[];

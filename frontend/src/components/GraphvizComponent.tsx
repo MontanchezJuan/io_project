@@ -2,33 +2,37 @@ import { useEffect, useState } from "react";
 
 import Graphviz from "graphviz-react";
 
-import { ToT, useStepbyStep } from "../context/StepByStepContext";
 import { DemandNode, Node, SupplyNode } from "../interface/common";
+import { Transbordo } from "../interface/transbordo";
+import { Transporte } from "../interface/transporte";
 
-export const GraphvizComponent = () => {
+interface Props {
+  data: Transbordo | Transporte;
+}
+
+export const GraphvizComponent = ({ data }: Props) => {
   const [transiciones, setTransiciones] = useState<string>(`digraph {\n
-    node [style="filled" height=2 width=2 fontsize=80];\n
+    node [style="filled" height=2 width=2 fontsize=100];\n
     graph [center=1 rankdir=LR];\n
-    nodesep=0.5;\n
-    ranksep=50;\n
+    nodesep=2.5;\n
+    ranksep=40;\n
     }`);
 
-  const { dataTransfer, dataTransport, step1 } = useStepbyStep();
-
-  const TYPE: ToT = step1.method || "Transbordo";
+  const [width, setWidth] = useState<number>();
+  const [height, setHeight] = useState<number>();
 
   useEffect(() => {
     getTransiciones();
-  }, []);
+    setWidth((window.innerWidth * 3) / 4);
+    setHeight((window.innerHeight * 3) / 4);
+  }, [data]);
 
   const getTransiciones = () => {
-    if (!dataTransfer || !dataTransport) return;
-
     let dot = `digraph {
-    node [style="filled" height=2 width=2 fontsize=80];\n
+    node [style="filled" height=2 width=2 fontsize=100];\n
     graph [center=1 rankdir=LR];\n
-    nodesep=0.5;\n
-    ranksep=50;\n
+    nodesep=2.5;\n
+    ranksep=40;\n
     ${getQuantity()}
     ${getSupplyNodes()}
     ${getTransshipmentNodes()}
@@ -45,11 +49,7 @@ export const GraphvizComponent = () => {
     let quantity = ``;
     let allNodes: (SupplyNode | DemandNode)[] = [];
 
-    if (TYPE === "Transbordo") {
-      allNodes = [...dataTransfer.demand, ...dataTransfer.supply];
-    } else {
-      allNodes = [...dataTransport.demand, ...dataTransport.supply];
-    }
+    allNodes = [...data.demand, ...data.supply];
 
     allNodes.forEach((node) => {
       if ("supply_quantity" in node) {
@@ -66,18 +66,14 @@ export const GraphvizComponent = () => {
     let nodes: string = ``;
     let allNodes: (SupplyNode | DemandNode)[] = [];
 
-    if (TYPE === "Transbordo") {
-      allNodes = [...dataTransfer.demand];
-    } else {
-      allNodes = [...dataTransport.demand];
-    }
+    allNodes = [...data.demand];
 
     allNodes.forEach((node) => {
       node.transitions?.forEach((transition) => {
         const transitionKey = Object.keys(transition)[0];
         const transitionValue = transition[transitionKey];
 
-        nodes += `${node.name} -> ${transitionKey} [label="${transitionValue}" fontsize=40];\n`;
+        nodes += `${node.name} -> ${transitionKey} [label="${transitionValue}" fontsize=60];\n`;
       });
     });
 
@@ -88,18 +84,14 @@ export const GraphvizComponent = () => {
     let nodes: string = ``;
     let allNodes: (SupplyNode | DemandNode)[] = [];
 
-    if (TYPE === "Transbordo") {
-      allNodes = [...dataTransfer.supply];
-    } else {
-      allNodes = [...dataTransport.supply];
-    }
+    allNodes = [...data.supply];
 
     allNodes.forEach((node) => {
       node.transitions?.forEach((transition) => {
         const transitionKey = Object.keys(transition)[0];
         const transitionValue = transition[transitionKey];
 
-        nodes += `${node.name} -> ${transitionKey} [label="${transitionValue}" fontsize=40];\n`;
+        nodes += `${node.name} -> ${transitionKey} [label="${transitionValue}" fontsize=60];\n`;
       });
     });
 
@@ -107,56 +99,46 @@ export const GraphvizComponent = () => {
   };
 
   const getTransshipmentNodes = () => {
-    if (dataTransfer.transshipment.length < 0) return "";
+    if ("transshipment" in data) {
+      let nodes: string = ``;
+      let allNodes: Node[] = [];
 
-    let nodes: string = ``;
-    let allNodes: Node[] = [];
+      allNodes = [...data.transshipment];
 
-    allNodes = [...dataTransfer.transshipment];
+      allNodes.forEach((node) => {
+        node.transitions?.forEach((transition) => {
+          const transitionKey = Object.keys(transition)[0];
+          const transitionValue = transition[transitionKey];
 
-    allNodes.forEach((node) => {
-      node.transitions?.forEach((transition) => {
-        const transitionKey = Object.keys(transition)[0];
-        const transitionValue = transition[transitionKey];
-
-        nodes += `${node.name} -> ${transitionKey} [label="${transitionValue}" fontsize=40];\n`;
+          nodes += `${node.name} -> ${transitionKey} [label="${transitionValue}" fontsize=60];\n`;
+        });
       });
-    });
 
-    return nodes;
+      return nodes;
+    }
+    return "";
   };
 
   const getRank = () => {
     let rank: string = ``;
 
-    if (TYPE === "Transbordo") {
-      rank += "{rank=min; ";
-      dataTransfer.supply.forEach((node) => {
-        rank += ` ${node.name};`;
-      });
-      rank += "}";
+    rank += "{rank=min; ";
+    data.supply.forEach((node) => {
+      rank += ` ${node.name};`;
+    });
+    rank += "}";
+    if ("transshipment" in data) {
       rank += "{rank=same; ";
-      dataTransfer.transshipment.forEach((node) => {
-        rank += ` ${node.name};`;
-      });
-      rank += "}";
-      rank += "{rank=max; ";
-      dataTransfer.demand.forEach((node) => {
-        rank += ` ${node.name};`;
-      });
-      rank += "}";
-    } else {
-      rank += "{rank=min; ";
-      dataTransport.supply.forEach((node) => {
-        rank += ` ${node.name};`;
-      });
-      rank += "}";
-      rank += "{rank=max; ";
-      dataTransport.demand.forEach((node) => {
+      data.transshipment.forEach((node) => {
         rank += ` ${node.name};`;
       });
       rank += "}";
     }
+    rank += "{rank=max; ";
+    data.demand.forEach((node) => {
+      rank += ` ${node.name};`;
+    });
+    rank += "}";
 
     return rank;
   };
@@ -167,10 +149,9 @@ export const GraphvizComponent = () => {
         dot={transiciones}
         options={{
           fit: true,
-          height: 700,
-          width: 1240,
+          height: height,
+          width: width,
           scale: 1,
-          // zoom: true,
         }}
       />
     </>

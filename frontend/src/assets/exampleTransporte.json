@@ -1,0 +1,40 @@
+{
+  "supply": [
+    {
+      "name": "Manizales",
+      "supply_quantity": 120,
+      "transitions": [
+        {
+          "Bogotá": 160
+        },
+        {
+          "Cartagena": 15
+        }
+      ]
+    },
+    {
+      "name": "Pereira",
+      "supply_quantity": 90,
+      "transitions": [
+        {
+          "Bogotá": 85
+        },
+        {
+          "Cartagena": 47
+        }
+      ]
+    }
+  ],
+  "demand": [
+    {
+      "name": "Bogotá",
+      "demand_quantity": 120,
+      "transitions": []
+    },
+    {
+      "name": "Cartagena",
+      "demand_quantity": 170,
+      "transitions": []
+    }
+  ]
+}

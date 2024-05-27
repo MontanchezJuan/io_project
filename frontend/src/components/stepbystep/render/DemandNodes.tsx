@@ -13,7 +13,8 @@ import { ArrowForwardIcon, DeleteIcon } from "@chakra-ui/icons";
 
 import Swal from "sweetalert2";
 
-import { ToT, useStepbyStep } from "../../../context/StepByStepContext";
+import { ToT } from "../../../interface/context/stepbystep.interface";
+import { useStepByStep } from "../../../hooks/useStepByStep";
 import { DemandNode } from "../../../interface/common";
 
 export const DemandNodes = () => {
@@ -25,7 +26,7 @@ export const DemandNodes = () => {
     setNodeName,
     setQuantity,
     step1,
-  } = useStepbyStep();
+  } = useStepByStep();
 
   const TYPE: ToT = step1.method || "Transbordo";
 

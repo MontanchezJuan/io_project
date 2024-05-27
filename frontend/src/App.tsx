@@ -7,11 +7,11 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { PAGES } from "./pages";
 
 import { Header } from "./layouts/Header";
-import { StepbyStepProvider } from "./context/StepByStepContext";
+import { StepByStepProvider } from "./providers/StepByStepProvider";
 
 function App() {
   return (
-    <StepbyStepProvider>
+    <StepByStepProvider>
       <ChakraProvider>
         <BrowserRouter>
           <Header />
@@ -28,7 +28,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </ChakraProvider>
-    </StepbyStepProvider>
+    </StepByStepProvider>
   );
 }
 

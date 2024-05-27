@@ -1,23 +1,25 @@
 import { Button, useDisclosure } from "@chakra-ui/react";
 
-import { useStepbyStep } from "../../context/StepByStepContext";
+import Swal from "sweetalert2";
 
+import { useStepByStep } from "../../hooks/useStepByStep";
 import { useHistoryModal } from "../../context/HistoryModalContext";
 
-import { HistoryNodeModal } from "./HistoryNodeModal";
+import { NodeHistoryModal } from "./NodeHistoryModal";
+import { DemandNodes } from "./render/DemandNodes";
 import { SupplyNodes } from "./render/SupplyNodes";
 import { TransshipmentNodes } from "./render/TransshipmentNodes";
-import { DemandNodes } from "./render/DemandNodes";
-import Swal from "sweetalert2";
+import { CopyButton } from "../CopyButton";
 
 export const StepTwo = () => {
   const {
     dataTransfer,
+    dataTransport,
     getTotalDemandQuantity,
-    getTotalSuplyQuantity,
+    getTotalSupplyQuantity,
     setStep,
-    setStep2,
-  } = useStepbyStep();
+    setNextStep,
+  } = useStepByStep();
 
   const { setTypeModal } = useHistoryModal();
 
@@ -54,17 +56,17 @@ export const StepTwo = () => {
       "question"
     ).then((result) => {
       if (result.isConfirmed) {
-        setStep2();
+        setNextStep("step2");
       }
     });
   };
 
   return (
     <>
-      <HistoryNodeModal onClose={onClose} isOpen={isOpen} />
+      {isOpen && <NodeHistoryModal onClose={onClose} isOpen={isOpen} />}
 
       <div className="flex flex-col w-full gap-4">
-        {Title("Supply", "Oferta", getTotalSuplyQuantity())}
+        {Title("Supply", "Oferta", getTotalSupplyQuantity())}
 
         <SupplyNodes />
 
@@ -85,8 +87,13 @@ export const StepTwo = () => {
             Anterior
           </Button>
 
+          <CopyButton
+            json={dataTransfer.supply.length > 0 ? dataTransfer : dataTransport}
+            isWhiteAlpha
+          />
+
           <Button colorScheme="whiteAlpha" onClick={handleNext}>
-            Siguiente
+            Ver gráfico
           </Button>
         </div>
       </div>

@@ -11,9 +11,10 @@ import { ArrowForwardIcon, DeleteIcon } from "@chakra-ui/icons";
 
 import Swal from "sweetalert2";
 
-import { ToT, useStepbyStep } from "../../../context/StepByStepContext";
+import { useStepByStep } from "../../../hooks/useStepByStep";
 import { Node } from "../../../interface/common";
 import { useHistoryModal } from "../../../context/HistoryModalContext";
+import { ToT } from "../../../interface/context/stepbystep.interface";
 
 export const TransshipmentNodes = () => {
   const {
@@ -22,7 +23,7 @@ export const TransshipmentNodes = () => {
     deleteTransition,
     setNodeName,
     step1,
-  } = useStepbyStep();
+  } = useStepByStep();
 
   const { setHistoryTransshipment } = useHistoryModal();
 

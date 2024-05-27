@@ -1,23 +1,21 @@
 import { Button, Heading } from "@chakra-ui/react";
-import Swal from "sweetalert2";
 import { GraphvizComponent } from "../GraphvizComponent";
-import { useStepbyStep } from "../../context/StepByStepContext";
+import { useStepByStep } from "../../hooks/useStepByStep";
 
 export const StepThree = () => {
-  const { setStep3, setStep } = useStepbyStep();
+  const { dataTransfer, dataTransport, setNextStep, setStep } = useStepByStep();
 
   const handleNext = () => {
-    Swal.fire("Alerta", "", "question").then((result) => {
-      if (result.isConfirmed) {
-        setStep3();
-      }
-    });
+    setNextStep("step3");
   };
+
   return (
     <div className="flex flex-col items-center gap-4">
-      <Heading>Gráfico</Heading>
+      <Heading>Red inicial</Heading>
 
-      <GraphvizComponent />
+      <GraphvizComponent
+        data={dataTransfer.supply.length > 0 ? dataTransfer : dataTransport}
+      />
 
       <div className="flex justify-between w-full">
         <Button colorScheme="whiteAlpha" onClick={() => setStep(1)}>

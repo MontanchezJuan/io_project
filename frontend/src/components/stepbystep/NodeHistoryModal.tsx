@@ -11,26 +11,28 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
+  Tag,
 } from "@chakra-ui/react";
 import { Field, FieldProps, Form, Formik } from "formik";
 
-import { ToT, useStepbyStep } from "../../context/StepByStepContext";
 import { useHistoryModal } from "../../context/HistoryModalContext";
 import { Node, SupplyNode } from "../../interface/common";
+import { useStepByStep } from "../../hooks/useStepByStep";
+import { ToT } from "../../interface/context/stepbystep.interface";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const HistoryNodeModal = ({ onClose, isOpen }: Props) => {
+export const NodeHistoryModal = ({ onClose, isOpen }: Props) => {
   const {
     createTransition,
     dataTransfer,
     dataTransport,
     getMissingValues,
     step1,
-  } = useStepbyStep();
+  } = useStepByStep();
 
   const {
     historySupply,
@@ -93,55 +95,56 @@ export const HistoryNodeModal = ({ onClose, isOpen }: Props) => {
           <ModalHeader>Añadir transición de {word}</ModalHeader>
           <ModalCloseButton />
           <ModalBody className="flex flex-col items-center gap-4">
-            <Formik
-              initialValues={{ fromNode: "", toNode: "" }}
-              onSubmit={(values, actions) => {
-                handleAddNode(values.fromNode, values.toNode);
+            {TYPE === "Transbordo" && (
+              <Formik
+                initialValues={{ fromNode: "", toNode: "" }}
+                onSubmit={(values, actions) => {
+                  handleAddNode(values.fromNode, values.toNode);
+                  actions.setSubmitting(false);
+                }}
+              >
+                <Form className="flex justify-around items-center w-full">
+                  <Field name="fromNode">
+                    {({ field }: FieldProps) => (
+                      <div>
+                        <Select placeholder={`Nodo de ${word}`} {...field}>
+                          {selectData}
+                        </Select>
+                      </div>
+                    )}
+                  </Field>
 
-                actions.setSubmitting(false);
-              }}
-            >
-              <Form className="flex justify-around items-center w-full">
-                <Field name="fromNode">
-                  {({ field }: FieldProps) => (
-                    <div>
-                      <Select placeholder={`Nodo de ${word}`} {...field}>
-                        {selectData}
-                      </Select>
-                    </div>
-                  )}
-                </Field>
+                  <ArrowForwardIcon />
 
-                <ArrowForwardIcon />
+                  <Field name="toNode">
+                    {({ field, form }: FieldProps) => (
+                      <div>
+                        <Select placeholder="Nodo" {...field}>
+                          {getMissingValues(
+                            typeModal,
+                            TYPE,
+                            form.values.fromNode
+                          ).map((value, index) => (
+                            <option key={index} value={value}>
+                              {value}
+                            </option>
+                          ))}
+                        </Select>
+                      </div>
+                    )}
+                  </Field>
 
-                <Field name="toNode">
-                  {({ field, form }: FieldProps) => (
-                    <div>
-                      <Select placeholder="Nodo" {...field}>
-                        {getMissingValues(
-                          typeModal,
-                          TYPE,
-                          form.values.fromNode
-                        ).map((value, index) => (
-                          <option key={index} value={value}>
-                            {value}
-                          </option>
-                        ))}
-                      </Select>
-                    </div>
-                  )}
-                </Field>
-
-                <Button
-                  color="#fff"
-                  bgColor="#472183"
-                  _hover={{ backgroundColor: "#475183" }}
-                  type="submit"
-                >
-                  Añadir
-                </Button>
-              </Form>
-            </Formik>
+                  <Button
+                    color="#fff"
+                    bgColor="#472183"
+                    _hover={{ backgroundColor: "#475183" }}
+                    type="submit"
+                  >
+                    Añadir
+                  </Button>
+                </Form>
+              </Formik>
+            )}
 
             {children}
           </ModalBody>
@@ -223,7 +226,7 @@ export const HistoryNodeModal = ({ onClose, isOpen }: Props) => {
     case "Supply":
       return (
         <ItemModal word="oferta">
-          {historySupply.length > 0 && (
+          {historySupply.length > 0 ? (
             <div className="flex flex-col items-center gap-1 w-full">
               {historySupply.map((supply, index) => (
                 <div
@@ -270,13 +273,17 @@ export const HistoryNodeModal = ({ onClose, isOpen }: Props) => {
                 </div>
               ))}
             </div>
+          ) : (
+            <Tag colorScheme="red">
+              Aquí se mostrarán los nodos que elimines
+            </Tag>
           )}
         </ItemModal>
       );
     case "Transshipment":
       return (
         <ItemModal word="transbordo">
-          {historyTransshipment.length > 0 && (
+          {historyTransshipment.length > 0 ? (
             <div className="flex flex-col items-center gap-1 w-full">
               {historyTransshipment.map((transshipment, index) => (
                 <div
@@ -323,6 +330,10 @@ export const HistoryNodeModal = ({ onClose, isOpen }: Props) => {
                 </div>
               ))}
             </div>
+          ) : (
+            <Tag colorScheme="red">
+              Aquí se mostrarán los nodos que elimines
+            </Tag>
           )}
         </ItemModal>
       );

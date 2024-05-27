@@ -562,6 +562,14 @@ video {
   margin-bottom: 3rem;
 }
 
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mt-6 {
+  margin-top: 1.5rem;
+}
+
 .flex {
   display: flex;
 }
@@ -584,10 +592,6 @@ video {
 
 .w-full {
   width: 100%;
-}
-
-.w-3\/4 {
-  width: 75%;
 }
 
 .cursor-pointer {
@@ -618,16 +622,12 @@ video {
   gap: 0.25rem;
 }
 
-.gap-4 {
-  gap: 1rem;
-}
-
 .gap-2 {
   gap: 0.5rem;
 }
 
-.gap-8 {
-  gap: 2rem;
+.gap-4 {
+  gap: 1rem;
 }
 
 .rounded-2xl {
@@ -659,11 +659,6 @@ video {
 .text-primary {
   --tw-text-opacity: 1;
   color: rgb(71 33 131 / var(--tw-text-opacity));
-}
-
-.text-quaternary {
-  --tw-text-opacity: 1;
-  color: rgb(241 246 245 / var(--tw-text-opacity));
 }
 
 .text-secondary {
