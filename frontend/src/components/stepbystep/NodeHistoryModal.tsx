@@ -11,12 +11,10 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
-  Tag,
 } from "@chakra-ui/react";
 import { Field, FieldProps, Form, Formik } from "formik";
 
 import { useHistoryModal } from "../../context/HistoryModalContext";
-import { Node, SupplyNode } from "../../interface/common";
 import { useStepByStep } from "../../hooks/useStepByStep";
 import { ToT } from "../../interface/context/stepbystep.interface";
 
@@ -34,19 +32,12 @@ export const NodeHistoryModal = ({ onClose, isOpen }: Props) => {
     step1,
   } = useStepByStep();
 
-  const {
-    historySupply,
-    historyTransshipment,
-    setHistorySupply,
-    setHistoryTransshipment,
-    typeModal,
-  } = useHistoryModal();
+  const { typeModal } = useHistoryModal();
 
   const TYPE: ToT = step1.method || "Transbordo";
 
   interface PropsItemModel {
     word: string;
-    children: React.ReactNode;
   }
 
   const selectData = useMemo(() => {
@@ -87,7 +78,7 @@ export const NodeHistoryModal = ({ onClose, isOpen }: Props) => {
     }
   }, [typeModal, TYPE, dataTransfer, dataTransport]);
 
-  const ItemModal = ({ word, children }: PropsItemModel) => {
+  const ItemModal = ({ word }: PropsItemModel) => {
     return (
       <Modal onClose={onClose} size="xl" isOpen={isOpen} isCentered>
         <ModalOverlay />
@@ -145,8 +136,6 @@ export const NodeHistoryModal = ({ onClose, isOpen }: Props) => {
                 </Form>
               </Formik>
             )}
-
-            {children}
           </ModalBody>
           <ModalFooter>
             <Button onClick={onClose}>Cerrar</Button>
@@ -161,182 +150,17 @@ export const NodeHistoryModal = ({ onClose, isOpen }: Props) => {
     toNode: string,
     weight: number = 0
   ) => {
-    switch (typeModal) {
-      case "Supply":
-        setHistorySupply((prev) => {
-          if (prev) {
-            return prev
-              .map((node) => {
-                if (node.name === fromNode) {
-                  const updatedTransitions = (node.transitions || []).filter(
-                    (transition) =>
-                      !Object.prototype.hasOwnProperty.call(transition, toNode)
-                  );
-                  if (updatedTransitions.length > 0) {
-                    return { ...node, transitions: updatedTransitions };
-                  }
-                  return null;
-                }
-                return node;
-              })
-              .filter((node): node is SupplyNode => node !== null);
-          } else {
-            return prev;
-          }
-        });
-        break;
-      case "Transshipment":
-        setHistoryTransshipment((prev) => {
-          if (prev) {
-            return prev
-              .map((node) => {
-                if (node.name === fromNode) {
-                  const updatedTransitions = (node.transitions || []).filter(
-                    (transition) =>
-                      !Object.prototype.hasOwnProperty.call(transition, toNode)
-                  );
-                  if (updatedTransitions.length > 0) {
-                    return { ...node, transitions: updatedTransitions };
-                  }
-                  return null;
-                }
-                return node;
-              })
-              .filter((node): node is Node => node !== null);
-          } else {
-            return prev;
-          }
-        });
-        break;
-
-      default:
-        break;
-    }
     createTransition(TYPE, fromNode, toNode, weight);
   };
 
   switch (typeModal) {
     case "Demand":
-      return (
-        <ItemModal word="demanda">
-          <></>
-        </ItemModal>
-      );
+      return <ItemModal word="demanda" />;
 
     case "Supply":
-      return (
-        <ItemModal word="oferta">
-          {historySupply.length > 0 ? (
-            <div className="flex flex-col items-center gap-1 w-full">
-              {historySupply.map((supply, index) => (
-                <div
-                  className="flex flex-col items-center gap-1 w-full"
-                  key={index}
-                >
-                  <p>{supply.name}</p>
-
-                  {supply.transitions?.map((t, i) => {
-                    const transitionKey = Object.keys(t)[0];
-                    const transitionValue = t[transitionKey];
-                    return (
-                      <div
-                        className="flex justify-around items-center w-full"
-                        key={i}
-                      >
-                        <p>{supply.name}</p>
-
-                        <ArrowForwardIcon />
-
-                        <p>{transitionValue}</p>
-
-                        <ArrowForwardIcon />
-
-                        <p>{transitionKey}</p>
-
-                        <Button
-                          color="#fff"
-                          bgColor="#472183"
-                          _hover={{ backgroundColor: "#475183" }}
-                          onClick={() =>
-                            handleAddNode(
-                              supply.name,
-                              transitionKey,
-                              transitionValue
-                            )
-                          }
-                        >
-                          Restaurar
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <Tag colorScheme="red">
-              Aquí se mostrarán los nodos que elimines
-            </Tag>
-          )}
-        </ItemModal>
-      );
+      return <ItemModal word="oferta" />;
     case "Transshipment":
-      return (
-        <ItemModal word="transbordo">
-          {historyTransshipment.length > 0 ? (
-            <div className="flex flex-col items-center gap-1 w-full">
-              {historyTransshipment.map((transshipment, index) => (
-                <div
-                  className="flex flex-col items-center gap-1 w-full"
-                  key={index}
-                >
-                  <p>{transshipment.name}</p>
-
-                  {transshipment.transitions?.map((t, i) => {
-                    const transitionKey = Object.keys(t)[0];
-                    const transitionValue = t[transitionKey];
-                    return (
-                      <div
-                        className="flex justify-around items-center w-full"
-                        key={i}
-                      >
-                        <p>{transshipment.name}</p>
-
-                        <ArrowForwardIcon />
-
-                        <p>{transitionValue}</p>
-
-                        <ArrowForwardIcon />
-
-                        <p>{transitionKey}</p>
-
-                        <Button
-                          color="#fff"
-                          bgColor="#472183"
-                          _hover={{ backgroundColor: "#475183" }}
-                          onClick={() =>
-                            handleAddNode(
-                              transshipment.name,
-                              transitionKey,
-                              transitionValue
-                            )
-                          }
-                        >
-                          Restaurar
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <Tag colorScheme="red">
-              Aquí se mostrarán los nodos que elimines
-            </Tag>
-          )}
-        </ItemModal>
-      );
+      return <ItemModal word="transbordo" />;
 
     default:
       break;
