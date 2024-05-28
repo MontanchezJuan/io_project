@@ -314,45 +314,33 @@ export const getMissingValues =
     let allNodes: (Node | SupplyNode | DemandNode)[] = [];
 
     if (method === "Transbordo") {
+      allNodes = [
+        ...stepGlobal.dataTransfer.demand,
+        ...stepGlobal.dataTransfer.supply,
+        ...stepGlobal.dataTransfer.transshipment,
+      ];
       switch (type) {
         case "Supply":
           relevantNodes = stepGlobal.dataTransfer.supply;
-          allNodes = [
-            ...stepGlobal.dataTransfer.demand,
-            ...stepGlobal.dataTransfer.supply,
-          ];
           break;
         case "Demand":
           relevantNodes = stepGlobal.dataTransfer.demand;
-          allNodes = [
-            ...stepGlobal.dataTransfer.demand,
-            ...stepGlobal.dataTransfer.supply,
-            ...stepGlobal.dataTransfer.transshipment,
-          ];
           break;
         case "Transshipment":
           relevantNodes = stepGlobal.dataTransfer.transshipment;
-          allNodes = [
-            ...stepGlobal.dataTransfer.supply,
-            ...stepGlobal.dataTransfer.transshipment,
-          ];
           break;
       }
     } else {
+      allNodes = [
+        ...stepGlobal.dataTransport.demand,
+        ...stepGlobal.dataTransport.supply,
+      ];
       switch (type) {
         case "Supply":
           relevantNodes = stepGlobal.dataTransport.supply;
-          allNodes = [
-            ...stepGlobal.dataTransport.demand,
-            ...stepGlobal.dataTransport.supply,
-          ];
           break;
         case "Demand":
           relevantNodes = stepGlobal.dataTransport.demand;
-          allNodes = [
-            ...stepGlobal.dataTransport.demand,
-            ...stepGlobal.dataTransport.supply,
-          ];
           break;
       }
     }

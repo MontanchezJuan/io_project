@@ -28,8 +28,8 @@ export const StepSix = () => {
           {step4.assignment &&
           data.assignments !== step4.numberOfAssignments ? (
             <p>
-              Asignaciones minimas:{" "}
-              <span className="text-white">{data.assignments}</span>
+              El problema es infactible cuando el valor de asignaciones es menor
+              a: <span className="text-white">{data.assignments}</span>
             </p>
           ) : (
             <p>

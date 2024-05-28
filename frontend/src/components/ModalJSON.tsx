@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { QuestionIcon } from "@chakra-ui/icons";
+import { QuestionIcon, WarningTwoIcon } from "@chakra-ui/icons";
 
 import {
   Button,
@@ -18,7 +18,6 @@ import {
   PopoverContent,
   PopoverHeader,
   PopoverTrigger,
-  Select,
   Textarea,
 } from "@chakra-ui/react";
 
@@ -44,7 +43,6 @@ export const ModalJSON = ({ isOpen, onClose }: Props) => {
     supply: [],
   };
 
-  const [method, setMethod] = useState<ToT | "">("");
   const [json, setJson] = useState<Transbordo | Transporte>(initialJSON);
   const [textareaValue, setTextareaValue] = useState(
     JSON.stringify(initialJSON, null, 2)
@@ -58,17 +56,13 @@ export const ModalJSON = ({ isOpen, onClose }: Props) => {
         (total) => (total += 1),
         0
       );
-      problemJSON(json, method as ToT, demand, supply, transshipment);
+      problemJSON(json, "Transbordo", demand, supply, transshipment);
     } else {
       const demand = json.demand.reduce((total) => (total += 1), 0);
       const supply = json.supply.reduce((total) => (total += 1), 0);
 
-      problemJSON(json, method as ToT, demand, supply);
+      problemJSON(json, "Transporte", demand, supply);
     }
-  };
-
-  const handleSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setMethod(e.target.value as ToT);
   };
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -84,11 +78,12 @@ export const ModalJSON = ({ isOpen, onClose }: Props) => {
   };
 
   const handleDisabled = (): boolean => {
-    if (method === "") return true;
     if (JSON.stringify(json) === JSON.stringify(initialJSON)) return true;
-
-    if (method === "Transbordo" && !isValidTransbordo(json)) return true;
-    if (method === "Transporte" && !isValidTransporte(json)) return true;
+    if ("transshipment" in json) {
+      if (!isValidTransbordo(json)) return true;
+    } else {
+      if (!isValidTransporte(json)) return true;
+    }
 
     return false;
   };
@@ -185,16 +180,18 @@ export const ModalJSON = ({ isOpen, onClose }: Props) => {
             <POP type="Transporte" />
           </div>
 
-          <Select placeholder="Seleccione un método" onChange={handleSelect}>
-            <option className="text-black" value="Transporte">
-              Transporte
-            </option>
-            <option className="text-black" value="Transbordo">
-              Transbordo
-            </option>
-          </Select>
+          <Textarea
+            height={200}
+            minHeight={200}
+            onChange={handleTextareaChange}
+            value={textareaValue}
+          />
 
-          <Textarea value={textareaValue} onChange={handleTextareaChange} />
+          <p className="text-red-600 text-[18px]">
+            <WarningTwoIcon /> Ten en cuenta que si la estructura del json no
+            corresponde a la que se maneja en los ejemplos, la aplicación puede
+            ser susceptible a errores.
+          </p>
         </ModalBody>
 
         <ModalFooter>
