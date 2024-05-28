@@ -52,7 +52,7 @@ class TransportationProblem:
             # Asignacion
             if assignments > 0:
                 yi = LpVariable.dicts(
-                    "Yi", graph.get_conjunto_i(), lowBound=0, upBound=1, cat="Binary"
+                    "Y", graph.get_conjunto_i(), lowBound=0, upBound=1, cat="Binary"
                 )
                 if assignments >= graph.get_minimo_asignaciones():
                     problema += (
@@ -97,7 +97,7 @@ class TransportationProblem:
             # Asignacion
             if assignments > 0:
                 yi = LpVariable.dicts(
-                    "Yi", graph.get_conjunto_j(), lowBound=0, upBound=1, cat="Binary"
+                    "Y", graph.get_conjunto_j(), lowBound=0, upBound=1, cat="Binary"
                 )
                 if assignments >= graph.get_minimo_asignaciones():
                     problema += (
@@ -179,6 +179,7 @@ class TransportationProblem:
             # En este ejemplo, simplemente agregamos los coeficientes de las variables en la función objetivo
             for variable in problem.variables():
                 parameters.append(f"{variable.name}: {problem.objective.get(variable)}")
+                parameters[-1] = re.sub(r"^[XY]", "C", parameters[-1])
             return formatear_ecuaciones(parameters)
 
         def formatear_ecuaciones(lista_ecuaciones):
@@ -194,7 +195,7 @@ class TransportationProblem:
             "objective": get_objective(problema),
             "constraints": get_constraints(problema),
             "variables": get_variables(problema),
-            "parametros": get_parameters(problema),
+            "parameters": get_parameters(problema),
         }
 
         graph.remove_unreachable_nodes()
