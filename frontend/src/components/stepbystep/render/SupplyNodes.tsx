@@ -15,7 +15,6 @@ import Swal from "sweetalert2";
 
 import { useStepByStep } from "../../../hooks/useStepByStep";
 import { SupplyNode } from "../../../interface/common";
-import { useHistoryModal } from "../../../context/HistoryModalContext";
 import { ToT } from "../../../interface/context/stepbystep.interface";
 
 export const SupplyNodes = () => {
@@ -28,8 +27,6 @@ export const SupplyNodes = () => {
     setQuantity,
     step1,
   } = useStepByStep();
-
-  const { setHistorySupply } = useHistoryModal();
 
   const TYPE: ToT = step1.method || "Transbordo";
 
@@ -81,45 +78,6 @@ export const SupplyNodes = () => {
         );
 
         if (transitionToDelete) {
-          let ok = false;
-          if (TYPE === "Transbordo") {
-            ok = dataTransfer.transshipment.some(
-              (node) => node.name === transitionKey
-            );
-          } else {
-            ok = dataTransport.demand.some(
-              (node) => node.name === transitionKey
-            );
-          }
-
-          if (ok) {
-            setHistorySupply((prev) => {
-              const nodeExists = prev.find((node) => node.name === supply.name);
-              if (nodeExists) {
-                return prev.map((node) => {
-                  if (node.name === supply.name) {
-                    return {
-                      ...node,
-                      transitions: [
-                        ...(node.transitions || []),
-                        transitionToDelete,
-                      ],
-                    };
-                  }
-                  return node;
-                });
-              } else {
-                return [
-                  ...prev,
-                  {
-                    ...supply,
-                    transitions: [transitionToDelete],
-                  },
-                ];
-              }
-            });
-          }
-
           deleteTransition(supply.name, transitionIndex);
         }
       }

@@ -13,7 +13,6 @@ import Swal from "sweetalert2";
 
 import { useStepByStep } from "../../../hooks/useStepByStep";
 import { Node } from "../../../interface/common";
-import { useHistoryModal } from "../../../context/HistoryModalContext";
 import { ToT } from "../../../interface/context/stepbystep.interface";
 
 export const TransshipmentNodes = () => {
@@ -24,8 +23,6 @@ export const TransshipmentNodes = () => {
     setNodeName,
     step1,
   } = useStepByStep();
-
-  const { setHistoryTransshipment } = useHistoryModal();
 
   const TYPE: ToT = step1.method || "Transbordo";
 
@@ -63,39 +60,6 @@ export const TransshipmentNodes = () => {
         );
 
         if (transitionToDelete) {
-          const ok = dataTransfer.demand.some(
-            (node) => node.name === transitionKey
-          );
-
-          if (ok) {
-            setHistoryTransshipment((prev) => {
-              const nodeExists = prev.find(
-                (node) => node.name === transshipment.name
-              );
-              if (nodeExists) {
-                return prev.map((node) => {
-                  if (node.name === transshipment.name) {
-                    return {
-                      ...node,
-                      transitions: [
-                        ...(node.transitions || []),
-                        transitionToDelete,
-                      ],
-                    };
-                  }
-                  return node;
-                });
-              } else {
-                return [
-                  ...prev,
-                  {
-                    ...transshipment,
-                    transitions: [transitionToDelete],
-                  },
-                ];
-              }
-            });
-          }
           deleteTransition(transshipment.name, transitionIndex);
         }
       }

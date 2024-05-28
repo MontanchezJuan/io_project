@@ -11,6 +11,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
+  useToast,
 } from "@chakra-ui/react";
 import { Field, FieldProps, Form, Formik } from "formik";
 
@@ -31,6 +32,8 @@ export const NodeHistoryModal = ({ onClose, isOpen }: Props) => {
     getMissingValues,
     step1,
   } = useStepByStep();
+
+  const toast = useToast();
 
   const { typeModal } = useHistoryModal();
 
@@ -150,7 +153,24 @@ export const NodeHistoryModal = ({ onClose, isOpen }: Props) => {
     toNode: string,
     weight: number = 0
   ) => {
-    createTransition(TYPE, fromNode, toNode, weight);
+    try {
+      createTransition(TYPE, fromNode, toNode, weight);
+      toast({
+        title: "Añadido.",
+        description: "Se ha añadido correctamente",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error.",
+        description: `Hubo un problema al añadir. ${error}`,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   switch (typeModal) {

@@ -27,6 +27,10 @@ export const StepFive = () => {
   });
 
   useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
     if (responseTransbordo.problem.demand.length > 0) {
       setData(responseTransbordo);
     } else if (responseTransporte) {

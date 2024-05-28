@@ -2,16 +2,15 @@ import { CopyIcon } from "@chakra-ui/icons";
 import { Button, useToast } from "@chakra-ui/react";
 
 interface Props {
-  json: object;
+  textToCopy: string;
   isWhiteAlpha?: boolean;
 }
 
-export const CopyButton = ({ json, isWhiteAlpha }: Props) => {
+export const CopyButton = ({ textToCopy, isWhiteAlpha }: Props) => {
   const toast = useToast();
 
   const handleCopy = () => {
-    const jsonToString = JSON.stringify(json, null, 2);
-    navigator.clipboard.writeText(jsonToString).then(
+    navigator.clipboard.writeText(textToCopy).then(
       () => {
         toast({
           title: "Copiado.",

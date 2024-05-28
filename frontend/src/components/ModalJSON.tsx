@@ -238,8 +238,10 @@ const POP = ({ type }: POPProps) => {
         <PopoverBody>
           <div className="flex justify-center w-full">
             <CopyButton
-              json={
-                type === "Transbordo" ? exampleTransbordo : exampleTransporte
+              textToCopy={
+                type === "Transbordo"
+                  ? JSON.stringify(exampleTransbordo, null, 2)
+                  : JSON.stringify(exampleTransporte, null, 2)
               }
             />
           </div>

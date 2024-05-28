@@ -88,7 +88,11 @@ export const StepTwo = () => {
           </Button>
 
           <CopyButton
-            json={dataTransfer.supply.length > 0 ? dataTransfer : dataTransport}
+            textToCopy={
+              dataTransfer.supply.length > 0
+                ? JSON.stringify(dataTransfer, null, 2)
+                : JSON.stringify(dataTransport, null, 2)
+            }
             isWhiteAlpha
           />
 
