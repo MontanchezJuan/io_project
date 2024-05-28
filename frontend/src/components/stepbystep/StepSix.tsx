@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Button, Heading, Tag } from "@chakra-ui/react";
 
 import { useStepByStep } from "../../hooks/useStepByStep";
@@ -5,6 +6,13 @@ import { useStepByStep } from "../../hooks/useStepByStep";
 export const StepSix = () => {
   const { responseTransbordo, responseTransporte, setStep, step4 } =
     useStepByStep();
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
 
   const data =
     responseTransbordo.problem.demand.length > 0
@@ -40,24 +48,33 @@ export const StepSix = () => {
 
           <div className="flex flex-col items-center">
             <p>Restricciones:</p>
-            {data.model.constraints.map((constraint) => (
-              <p className="text-white">{constraint}</p>
-            ))}
+            {data.model.constraints &&
+              data.model.constraints.map((constraint, index) => (
+                <p key={index} className="text-white">
+                  {constraint}
+                </p>
+              ))}
           </div>
 
           <div className="flex justify-around w-full">
             <div className="flex flex-col items-center">
               <p>Coeficientes de variables:</p>
-              {data.model.parameters.map((parameter) => (
-                <p className="text-white">{parameter}</p>
-              ))}
+              {data.model.parameters &&
+                data.model.parameters.map((parameter, index) => (
+                  <p key={index} className="text-white">
+                    {parameter}
+                  </p>
+                ))}
             </div>
 
             <div className="flex flex-col items-center">
               <p>Variables de solución:</p>
-              {data.model.variables.map((variable) => (
-                <p className="text-white">{variable}</p>
-              ))}
+              {data.model.variables &&
+                data.model.variables.map((variable, index) => (
+                  <p key={index} className="text-white">
+                    {variable}
+                  </p>
+                ))}
             </div>
           </div>
         </>

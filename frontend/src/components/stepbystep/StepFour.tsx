@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Formik, Field, FieldProps, Form } from "formik";
 
-import { Button, Checkbox, Heading, Input, Select } from "@chakra-ui/react";
+import { Button, Checkbox, Heading, Input, useToast } from "@chakra-ui/react";
 import Swal from "sweetalert2";
 
 import { useStepByStep } from "../../hooks/useStepByStep";
@@ -31,17 +31,21 @@ export const StepFour = () => {
     step4,
   } = useStepByStep();
 
+  const toast = useToast();
+
   const [supply, setSupply] = useState(getTotalSupplyQuantity());
   const [demand, setDemand] = useState(getTotalDemandQuantity());
   const [maxNumber, setMaxNumber] = useState<number>(1);
-  const [initialValues, setInitialValues] = useState<Step4>(
-    step4 || {
-      assignment: false,
-      numberOfAssignments: maxNumber,
-    }
-  );
+  const [initialValues, setInitialValues] = useState<Step4>({
+    assignment: false,
+    numberOfAssignments: maxNumber,
+  });
 
   useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
     setSupply(getTotalSupplyQuantity());
     setDemand(getTotalDemandQuantity());
     setMaxNumber(supply > demand ? step1.supplyNodes : step1.demandNodes);
@@ -68,24 +72,45 @@ export const StepFour = () => {
               values.assignment === true ? values.numberOfAssignments : 0,
           };
 
-          transshipmentProblemApi(data)
-            .then((response) => {
-              Swal.fire("", "", "success").then(() => {
+          toast.promise(
+            transshipmentProblemApi(data)
+              .then((response) => {
                 setResponseTransbordo(response.data);
                 setNextStep("step4", values);
-              });
-            })
-            .catch((error) => {
-              console.log(error.response.data.error);
-              Swal.fire(
-                "Error",
-                error.response.data.message +
-                  ": " +
-                  error.response.data.error || error,
-                "error"
-              );
-            });
-        } else {
+              })
+              .catch((error) => {
+                console.log(error.response.data.error);
+                Swal.fire(
+                  "Error",
+                  error.response.data.message +
+                    ": " +
+                    error.response.data.error || error,
+                  "error"
+                );
+              }),
+            {
+              success: {
+                title: "Problema resuelto",
+                description: "Genial!",
+                duration: 3000,
+                isClosable: true,
+              },
+              error: {
+                title: "Ups!",
+                description: "Algo salió mal",
+                duration: 3000,
+                isClosable: true,
+              },
+              loading: {
+                title: "Cargando",
+                description: "Por favor espere un momento",
+              },
+            }
+          );
+
+          return;
+        }
+        if (dataTransport.demand.length > 0) {
           if (!values.numberOfAssignments) return;
           const data: DataTransporte = {
             problem: dataTransport,
@@ -93,23 +118,42 @@ export const StepFour = () => {
               values.assignment === true ? values.numberOfAssignments : 0,
           };
 
-          transportationProblemApi(data)
-            .then((response) => {
-              Swal.fire("", "", "success").then(() => {
+          toast.promise(
+            transportationProblemApi(data)
+              .then((response) => {
                 setResponseTransporte(response.data);
                 setNextStep("step4", values);
-              });
-            })
-            .catch((error) => {
-              console.log(error.response.data.error);
-              Swal.fire(
-                "Error",
-                error.response.data.message +
-                  ": " +
-                  error.response.data.error || error,
-                "error"
-              );
-            });
+              })
+              .catch((error) => {
+                console.log(error.response.data.error);
+                Swal.fire(
+                  "Error",
+                  error.response.data.message +
+                    ": " +
+                    error.response.data.error || error,
+                  "error"
+                );
+              }),
+            {
+              success: {
+                title: "Problema resuelto",
+                description: "Genial!",
+                duration: 3000,
+                isClosable: true,
+              },
+              error: {
+                title: "Ups!",
+                description: "Algo salió mal",
+                duration: 3000,
+                isClosable: true,
+              },
+              loading: {
+                title: "Cargando",
+                description: "Por favor espere un momento",
+              },
+            }
+          );
+          return;
         }
       }
     });
@@ -186,35 +230,6 @@ export const StepFour = () => {
             </Field>
           </>
         )}
-
-        {/* Aquí es el select dinamico si oferta > demanda -> ahi sale para escoger [ oferta, transbordo ] */}
-        <Select>
-          <option></option>
-        </Select>
-
-        {/* Inputs dinamicos para el valor que seleccione en el caso anterior, tomar como ejemplo en el archivo NodeHistoryModal el componente
-                  <Field name="toNode">
-                    {({ field, form }: FieldProps) => (
-                      <div>
-                        <Select placeholder="Nodo" {...field}>
-                          {getMissingValues(
-                            typeModal,
-                            TYPE,
-                            form.values.fromNode
-                          ).map((value, index) => (
-                            <option key={index} value={value}>
-                              {value}
-                            </option>
-                          ))}
-                        </Select>
-                      </div>
-                    )}
-                  </Field>
-                  linea 110
-        */}
-        <div>
-          <Input />
-        </div>
 
         <div className="flex justify-between w-full">
           <Button colorScheme="whiteAlpha" onClick={() => setStep(2)}>
