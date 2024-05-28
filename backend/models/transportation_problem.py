@@ -177,7 +177,13 @@ class TransportationProblem:
             parameters = []
             # En este ejemplo, simplemente agregamos los coeficientes de las variables en la función objetivo
             for variable in problem.variables():
-                parameters.append(f"{variable.name}: {problem.objective.get(variable)}")
+                if problem.objective.get(variable) is not None:
+                    parameters.append(
+                        f"{variable.name}: {problem.objective.get(variable)}"
+                    )
+                else:
+                    parameters.append(f"{variable.name}: 0")
+
                 parameters[-1] = re.sub(r"^[XY]", "C", parameters[-1])
             return formatear_ecuaciones(parameters)
 
