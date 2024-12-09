@@ -151,6 +151,7 @@ export const DemandNodes = () => {
                             parseFloat(e.target.value)
                           )
                         }
+                        type="number"
                       />
                     </div>
                     <ArrowForwardIcon />

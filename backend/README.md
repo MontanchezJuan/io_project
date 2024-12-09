@@ -8,11 +8,17 @@ Install Python: - Go to the [Python download page](https://www.python.org/downlo
 
 From the terminal or command prompt:
 
-Install PuLP: `pip install pulp`
+```bash
+python -m venv .venv
+```
 
-Install Flask: `pip install flask`
+```bash
+.venv\Scripts\activate
+```
 
-Install Flask-CORS: `pip install flask-cors`
+```bash
+pip install -r requirements.txt
+```
 
 ## Step 3
 
@@ -28,11 +34,17 @@ Instalar Python : - Ve a la [Página de descarga de Python](https://www.python.o
 
 Desde la terminal o ventana de comandos
 
-instalar PuLP: `pip install pulp`
+```bash
+python -m venv .venv
+```
 
-instalar Flask: `pip install flask`
+```bash
+.venv\Scripts\activate
+```
 
-instalar Flask-CORS: `pip install flask-cors`
+```bash
+pip install -r requirements.txt
+```
 
 ## Paso 3
 
