@@ -157,6 +157,7 @@ export const SupplyNodes = () => {
                             parseFloat(e.target.value)
                           )
                         }
+                        type="number"
                       />
                     </div>
 

@@ -188,9 +188,9 @@ export const ModalJSON = ({ isOpen, onClose }: Props) => {
           />
 
           <p className="text-red-600 text-[18px]">
-            <WarningTwoIcon /> Ten en cuenta que si la estructura del json no
-            corresponde a la que se maneja en los ejemplos, la aplicación puede
-            ser susceptible a errores.
+            <WarningTwoIcon /> Ten en cuenta que, si la estructura del JSON no
+            coincide con la utilizada en los ejemplos, la aplicación podría ser
+            propensa a errores.
           </p>
         </ModalBody>
 

@@ -121,6 +121,7 @@ export const TransshipmentNodes = () => {
                             parseFloat(e.target.value)
                           )
                         }
+                        type="number"
                       />
                     </div>
                     <ArrowForwardIcon />
